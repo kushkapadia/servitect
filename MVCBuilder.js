@@ -477,7 +477,7 @@ exports.apiRegister = function (req, res) {
   let ${modelname.toLowerCase()} = new ${modelname}(req.body);
   console.log(req.body);
 
-  let result = new TryCatch(${modelname.toLowerCase()}.register()).tryCatchGlobe();
+  let result = await ${modelname.toLowerCase()}.register();
   if (result) {
     let data = {
       token: jwt.sign(
@@ -597,7 +597,7 @@ router.post('/login-${modelName.toLowerCase()}', new TryCatch(${modelName.toLowe
 router.post('/${modelName.toLowerCase()}/does-email-exists', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.doesEmailExist).tryCatchGlobe());
 router.get('/${modelName.toLowerCase()}/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
 router.get('/${modelName.toLowerCase()}/get-by-email/:email', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getByEmail).tryCatchGlobe());
-router.get('/${modelName.toLowerCase()}/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}).tryCatchGlobe());
+router.get('/${modelName.toLowerCase()}/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName})s.tryCatchGlobe());
 router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
 //Entity - ${modelName} - End
 `;
@@ -651,14 +651,9 @@ async function addNonActorRoutes(modelName) {
 
     const routeContent = `
 //Entity - ${modelName} --start
-//Authentication - ${modelName}
-router.post('/register-${modelName.toLowerCase()}', new TryCatch(${modelName.toLowerCase()}Controller.apiRegister).tryCatchGlobe());
-router.post('/login-${modelName.toLowerCase()}', new TryCatch(${modelName.toLowerCase()}Controller.apiLogin).tryCatchGlobe());
 
 //CRUD Operations - ${modelName}
-router.post('/${modelName.toLowerCase()}/does-email-exists', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.doesEmailExist).tryCatchGlobe());
 router.get('/${modelName.toLowerCase()}/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
-router.get('/${modelName.toLowerCase()}/get-by-email/:email', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getByEmail).tryCatchGlobe());
 router.get('/${modelName.toLowerCase()}/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
 router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
 //Entity - ${modelName} - End
@@ -902,7 +897,7 @@ function menu() {
     console.log("3. 📝 Create New Model");
     console.log("4. 💬 Add Chat Interface");
     console.log("5. 🔼Add File Upload Feature")
-    console.log("6. 🔼Add File Upload Feature")
+    console.log("6. ❌EXIT")
     console.log("===============================\n");
 
     ci();
