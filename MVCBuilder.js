@@ -8,17 +8,8 @@ const { exit } = require("process");
 let content = "";
 let attributes = "";
 let nonActorAttributes = "";
-
-let primaryKey = null;
-let modelNameGlob = null;
-let askedForColumnCount = false;
-let dbTableName = null;
-let attributeNameGlob = null;
-let columnDataTypeGlob = null;
-let validations = [];
 let actorModelFileContent = "";
 let ModelFileContent = "";
-let flCapitalisedSubModuleName = null;
 
 //funct to start readline interface.
 function ci() {
@@ -73,7 +64,9 @@ class Nodemailer{
             }
         })
     }
-}`,
+}
+module.exports = Nodemailer
+`,
   whatsappFileContent: `import axios from "axios"
 require("dotenv").config()
 class WhatsappNotification {
@@ -111,13 +104,15 @@ class WhatsappNotification {
                 return error.response.data;
             });
     }
-}`,
+}
+module.exports = WhatsappNotification
+`,
   dbFileContent: `const {MongoClient} = require('mongodb')
 
 const dotenv = require('dotenv')
 dotenv.config()
 
-    const client = new MongoClient(process.env.CONNECTIONSTRING)
+    const client = new MongoClient(process.env.CONNECTION_STRING)
     
     async function start(){
       await client.connect()
@@ -126,10 +121,7 @@ dotenv.config()
       module.exports = client
       const app = require('./app')
       app.listen(process.env.PORT)
-      
-   
     }
-    
       start()`,
   appFileContent: `const express = require("express");
 const router = require("./router");
@@ -605,6 +597,11 @@ exports.doesEmailExist = async function (req, res) {
   );
 };
 
+exports.create${modelname} = async function(req, res){
+  let ${modelname.toLowerCase()} = new ${modelname}(req.body)
+ let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.create${modelname}();
+ new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, "Created")
+}
 
 exports.getById = async function(req, res){
   let ${modelname.toLowerCase()} = new ${modelname}()
@@ -655,6 +652,12 @@ exports.deleteById= async function(req, res){
                 //predefined end
                   };
                 };
+
+                ${modelName}.prototype.create${modelName} = async function(){
+                  this.cleanUp()
+                 const ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.insertOne(this.data);
+                  return ${modelName.toLowerCase()}Doc
+                }
                               
                 ${modelName}.prototype.getById = async function (id){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({_id: new ObjectId(id)})
@@ -851,7 +854,7 @@ initEnv:async function () {
     });
   });
   const CONNECTION_STRING = await new Promise((resolve) => {
-    rl.question("👉Enter the Connection String [Default-4000] 💁‍♂️ : ", (answer) => {
+    rl.question("👉Enter the Connection String 💁‍♂️ : ", (answer) => {
       resolve(answer);
     });
   });
@@ -859,9 +862,8 @@ initEnv:async function () {
   await fs.appendFile(".env", fileContent.envFileContent(PORT, CONNECTION_STRING));
 
   console.log("✅ Env file created successfully.\n");
-
-
 },
+
 initGitIgnore:async function () {
   await fs.appendFile(".gitignore", fileContent.gitIgnoreFileContent);
   console.log("✅ Git Ignore file created successfully.\n");
@@ -871,6 +873,7 @@ initPackageFile:async function () {
   await fs.appendFile("package.json", fileContent.packageJsonFileContent)
   console.log("✅ Package.json file created successfully.\n");
 },
+
 initConstants:async function () {
   const contsantsDir = path.join(__dirname, "constants");
   await fs.mkdir(contsantsDir, { recursive: true });
@@ -878,6 +881,7 @@ initConstants:async function () {
   await fs.writeFile("./constants/Messages.js", fileContent.messageFileContent);
   console.log("✅ Messages file created successfully.\n");
 },
+
 initMVC:async function () {
   const modelsDir = path.join(__dirname, "models");
   await fs.mkdir(modelsDir, { recursive: true });
@@ -965,7 +969,9 @@ async function insertCode(importMarker, routeMarker, filePath, importContent, ro
 async function initialize() {
   try {
     initializers.initPackageFile();
+    console.log("📦 Installing Packages...")
     await installDependency(dependencyList)
+    console.log("✅ Installation Successfull...")
     await initializers.initMainAppFile();
     await initializers.initDbConnection();
     await initializers.initEnv();
@@ -990,7 +996,7 @@ async function createActorModel() {
             });
         });
 
-        modelNameGlob = modelName;
+        // modelNameGlob = modelName;
         await askForAttributes(modelName);
     } catch (err) {
         console.error("❌ Error:", err.message);
@@ -1003,7 +1009,7 @@ async function askForAttributes(modelName) {
     switch (ans) {
       case "yes":
         rl.question("👉Enter the Attribute Name: ", async (attributeName) => {
-          attributeNameGlob = attributeName;
+          // attributeNameGlob = attributeName;
           attributes += `${attributeName}: this.data.${attributeName},\n`;
           askForAttributes(modelName);
         });
@@ -1036,7 +1042,7 @@ async function createModel() {
   content = "";
 
   rl.question("👉Enter the Name of the *MODEL* : ", async (modelName) => {
-    modelNameGlob = modelName;
+    // modelNameGlob = modelName;
    await askForNonActorAttributes(modelName);
   });
 }
@@ -1046,7 +1052,7 @@ async function askForNonActorAttributes(modelName) {
     switch (ans) {
       case "yes":
         rl.question("👉Enter the Attribute Name: ", async (attributeName) => {
-          attributeNameGlob = attributeName;
+          // attributeNameGlob = attributeName;
           nonActorAttributes += `${attributeName}: this.data.${attributeName},\n`;
          await askForNonActorAttributes(modelName);
         });
@@ -1136,6 +1142,7 @@ async function addNonActorRoutes(modelName) {
 //Entity - ${modelName} --start
 
 //CRUD Operations - ${modelName}
+router.post('/${modelName.toLowerCase()}/create', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.create${modelName}).tryCatchGlobe());
 router.get('/${modelName.toLowerCase()}/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
 router.get('/${modelName.toLowerCase()}/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
 router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
@@ -1386,6 +1393,6 @@ function menu() {
 console.log("\n===============================");
 console.log("       🚀 Welcome to the        ");
 console.log("     💼 Project Manager CLI     ");
-console.log("      🙋‍♂️ Dev: Kush Kapadia    ");
+console.log(" 🙋‍♂️ Dev: Kush Kapadia | Mit Shah    ");
 console.log("===============================\n");
 menu();
