@@ -31,6 +31,87 @@ const dependencyList = "bcryptjs express jsonwebtoken connect-mongo dotenv morga
 
 // all file contents
 const fileContent = {
+  nodemailerFileContent: `const nodemailer = require("nodemailer")
+require("dotenv").config()
+class Nodemailer{
+    recieverEmail
+    subject
+    content
+
+    constructor(recieverEmail,subject, content){
+        this.recieverEmail = recieverEmail
+        this.subject = subject
+        this.content = content
+    }
+
+    sendMail(){
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.NODEMAILER_ADMIN_EMAIL,
+                pass: process.env.NODEMAILER_ADMIN_PASSWORD
+            }
+        });
+
+        let details = {
+            from: process.env.NODEMAILER_ADMIN_EMAIL,
+            to: this.recieverEmail,
+            subject: this.subject,
+            html: this.content
+        }
+
+
+        transporter.sendMail(details, (err) => {
+            if (err) {
+                return err;
+            } else {
+                return 'Sent Mail Successfully';
+            }
+        })
+    }
+}`,
+  whatsappFileContent: `import axios from "axios"
+require("dotenv").config()
+class WhatsappNotification {
+    numberToSend;
+    msgBody
+
+    constructor(numberToSend, msgBody) {
+        this.numberToSend = numberToSend
+        this.msgBody = msgBody
+    }
+
+    sendWhatsappNotification() {
+        const url = process.env.WHATSAPP_URL;
+        const accessToken = process.env.WHATSAPP_ACCESS_TOKEN; 
+
+        const data = {
+            messaging_product: 'whatsapp',
+            to: this.numberToSend,
+            type: 'text',
+            text: {
+                body: this.msgBody
+            },
+        };
+
+        const headers = {
+            Authorization: "Bearer " + accessToken,
+            'Content-Type': 'application/json',
+        };
+
+        axios.post(url, data, { headers })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                return error.response.data;
+            });
+    }
+}`,
   dbFileContent: `const {MongoClient} = require('mongodb')
 
 const dotenv = require('dotenv')
@@ -230,9 +311,12 @@ const Messages = require('./constants/Messages');
 //code here
 module.exports = router;
 `,
-  firebaseControllerFile : `
+  firebaseControllerFile: `
 const admin = require("firebase-admin");
 const { firebase } = require("googleapis/build/src/apis/firebase");
+const JsonResponse = require("../helper/JsonResponse");
+const Messages = require("../constants/Messages");
+
 
 exports.sendNotificationToCustomDevice = async (req, res) => {
   const token = req.body.fcmToken;
@@ -252,12 +336,12 @@ exports.sendNotificationToCustomDevice = async (req, res) => {
     .messaging()
     .send(message)
     .then((response) => {
-      console.log("Successfully sent message:", response);
-      res.status(200).json({ message: "ok" });
+      // console.log("Successfully sent message:", response);
+      new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
     })
     .catch((error) => {
-      console.log("Error sending message:");
-      res.status(500).json({ message: "Error sending push notification" });
+      // console.log("Error sending message:");
+      new JsonResponse(req, res).jsonError(error, new Messages().PUSH_NOTIFICATION_FAILED)
     });
 };
 
@@ -282,12 +366,12 @@ exports.sendNotificationToTopic = async (req, res) => {
     .messaging()
     .send(message)
     .then((response) => {
-      console.log("Successfully sent message:", response);
-      return res.status(200).json({ message: "ok" });
+      // console.log("Successfully sent message:", response);
+      new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
     })
     .catch((error) => {
-      console.log("Error sending message:");
-      res.status(500).json({ message: "Error sending push notification" });
+      // console.log("Error sending message:");
+      new JsonResponse(req, res).jsonError(error, new Messages().PUSH_NOTIFICATION_FAILED)
     });
 };
 
@@ -310,24 +394,25 @@ exports.sendBatchNotificationsMultipleFCMS = async (req, res) => {
       .messaging()
       .sendEachForMulticast(message)
       .then((response) => {
-        if (response.failureCount > 0) {
-          const failedTokens = [];
-          response.responses.forEach((resp, idx) => {
-            if (!resp.success) {
-              failedTokens.push(tokens[idx]);
-            }
-          });
-          console.log("List of tokens that caused failures: " + failedTokens);
-          res
-            .status(200)
-            .send("List of tokens that caused failures: " + failedTokens);
-        } else {
-          res.status(200).json({ message: "ok" });
-        }
+        // if (response.failureCount > 0) {
+        //   const failedTokens = [];
+        //   response.responses.forEach((resp, idx) => {
+        //     if (!resp.success) {
+        //       failedTokens.push(tokens[idx]);
+        //     }
+        //   });
+        //   console.log("List of tokens that caused failures: " + failedTokens);
+        //   new JsonResponse(req, res).jsonSuccess(response.failureCount, new Messages().PUSH_NOTIFICATION_SENT)
+
+        // } else {
+          new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
+        // }
       });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Error sending push notification" });
+    // res.status(500).json({ message: "Error sending push notification" });
+    new JsonResponse(req, res).jsonSuccess(err, new Messages().PUSH_NOTIFICATION_FAILED)
+
   }
 };
 exports.sendNotificationsToMultipleTopics = async (req, res) => {
@@ -353,51 +438,49 @@ exports.sendNotificationsToMultipleTopics = async (req, res) => {
       const notificationPromises = topicChunks.map(async (chunk) => {
         const condition = chunk
           .map((topic) => \`'\${topic.replace(/'/g, "\\'").replace(/ /g, "_")}' in topics\`)
-      .join(" || ");
-    console.log("Condition:", condition);
+  .join(" || ");
+console.log("Condition:", condition);
 
-    const message = {
-      notification: {
-        title: req.body.title,
-        body: req.body.desc,
-      },
-      data: {
-        url: req.body.url,
-      },
-      condition: condition,
-    };
-
-    try {
-      const response = await admin.messaging().send(message);
-      console.log("Successfully sent message:", response);
-      return { status: "success", response };
-    } catch (error) {
-      console.log("Error sending message:", error);
-      return { status: "error", error };
-    }
-  });
-
-  const results = await Promise.all(notificationPromises);
-
-  const failedNotifications = results.filter(
-    (result) => result.status === "error"
-  );
-
-  if (failedNotifications.length > 0) {
-    return res.status(500).send({
-      error: "Error sending some notifications",
-      details: failedNotifications,
-    });
-  }
-
-  res.status(200).send({
-    message: "Notifications sent successfully",
-    results,
-  });
+const message = {
+  notification: {
+    title: req.body.title,
+    body: req.body.desc,
+  },
+  data: {
+    url: req.body.url,
+  },
+  condition: condition,
 };
+
+const results = await Promise.all(notificationPromises);
+try {
+  const response = await admin.messaging().send(message);
+  console.log("Successfully sent message:", response);
+  // return { status: "success", response };
+  new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
+} catch (error) {
+  console.log("Error sending message:", error);
+  // return { status: "error", error };
+  new JsonResponse(req, res).jsonError(error, new Messages().PUSH_NOTIFICATION_FAILED)
+
+}
+  });
+
+
+  // const failedNotifications = results.filter(
+  //   (result) => result.status === "error"
+  // );
+
+  // if (failedNotifications.length > 0) {
+  //   new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
+
+  // }
+
+  // new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
+
+}
 `,
-   uploadControllerFile :
-    `
+   uploadControllerFile : `
     const path = require('path');
 exports.uploadDocument = async function(req, res){
   
@@ -1120,7 +1203,29 @@ try {
   }
 }
 
+async function createFirebaseRoutes(){
+  let data = await fs.readFile("./router.js", "utf8");
 
+  const importContent = `const firebaseController = require("./controllers/firebaseController")`
+  const routeContent = `//Firebase Push Notification Routes - Start
+router.post("/firebase/sendNotificationToCustomDevice", AuthHelper.verifyToken,
+    new TryCatch(firebaseController.sendNotificationToCustomDevice).tryCatchGlobe());
+
+router.post("/firebase/sendNotificationToTopic/:topic", AuthHelper.verifyToken, 
+    new TryCatch(firebaseController.sendNotificationToTopic).tryCatchGlobe());
+
+router.post("/firebase/sendBatchNotificationsMultipleFCMS", AuthHelper.verifyToken,
+    new TryCatch(firebaseController.sendBatchNotificationsMultipleFCMS).tryCatchGlobe());
+
+router.post("/firebase/sendNotificationsToMultipleTopics", AuthHelper.verifyToken,
+    new TryCatch(firebaseController.sendNotificationsToMultipleTopics).tryCatchGlobe());
+//Firebase Push Notification Routes - End
+`;
+  const importMarker = "//imports here";
+  const routeMarker = "//code here";
+
+  await insertCode(importMarker, routeMarker, './router.js', importContent, routeContent, data);
+}
 async function addFirebaseFCM(){
   console.log("📦 Installing Packages...")
 
@@ -1146,6 +1251,7 @@ async function addFirebaseFCM(){
     const routeMarker = "//code here";
 
     await insertCode(importMarker,routeMarker,'./app.js',importContent,routeContent,data);
+    await createFirebaseRoutes();
     rl.close()
     menu()
   } catch (err) {
@@ -1161,6 +1267,30 @@ async function addFirebaseFCM(){
     rl.close()
     menu()
 }
+
+async function addWhatsapp(){
+  console.log("📦 Installing Axios...")
+  await installDependency("axios")
+  console.log("📦 Axios Installation Complete...")
+
+  await fs.appendFile(`./helper/WhatsappNotification.js`, fileContent.whatsappFileContent);
+  await fs.appendFile(`.env`, '\nWHATSAPP_URL="https://graph.facebook.com/v18.0/144528362069356/messages"\nWHATSAPP_ACCESS_TOKEN=');
+
+  console.log(`✅ Whatsapp Feature Added.\nMake Sure to add 🔐 access token in environment variables.\n`)
+  rl.close()
+  menu()
+}
+async function addNodemailer(){
+  console.log("📦 Installing nodemailer...")
+  await installDependency("nodemailer")
+  console.log("📦 Nodemailer Installation Complete...")
+  await fs.appendFile(`./helper/Nodemailer.js`, fileContent.nodemailerFileContent);
+  await fs.appendFile(`.env`, '\nNODEMAILER_ADMIN_EMAIL="atharvalolzzz96@gmail.com"\nNODEMAILER_ADMIN_PASSWORD="cpknpwooqdjulvop"');
+
+  console.log(`✅ Email Feature Added.\n`)
+  rl.close()
+  menu()
+}
 function menu() {
     console.log("==============MENU=============");
     console.log("1. 📁 Initialize");
@@ -1169,7 +1299,9 @@ function menu() {
     console.log("4. 💬 Add Chat Interface");
     console.log("5. 🔼 Add File Upload Feature")
     console.log("6. 🔔 Firebase Push Notifications")
-    console.log("7. ❌ Quit")
+    console.log("7. 🟢 Add Whatsapp Notifications")
+    console.log("8. 🗒️ Add Nodemailer")
+    console.log("9. ❌ Quit")
     console.log("===============================\n");
 
     ci();
@@ -1224,8 +1356,22 @@ function menu() {
             } catch (err) {
               console.error("❌ Error adding firebase:", err.message);
             }
-            break;   
-                    case "7":
+            break; 
+          case "7":
+            try {
+              await addWhatsapp();
+            } catch (err) {
+              console.error("❌ Error adding whatsapp:", err.message);
+            }
+            break; 
+          case "8":
+            try {
+              await addNodemailer();
+            } catch (err) {
+              console.error("❌ Error adding nodemailer:", err.message);
+            }
+            break; 
+                    case "8":
                         console.log("✨HAPPY CODING - Thank You For Using✨")
                         exit(0);
             default:
