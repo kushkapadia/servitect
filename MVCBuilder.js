@@ -152,7 +152,7 @@ app.use(cors());
 
 module.exports = app;
 `,
-  envFileContent: (PORT, CONNECTION_STRING) => `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}`,
+  envFileContent: (PORT, CONNECTION_STRING) => `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwerty`,
   gitIgnoreFileContent :
   `/node_modules\n.env`,
   packageJsonFileContent:`{
