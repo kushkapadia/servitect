@@ -1371,7 +1371,7 @@ function menu() {
               console.error("❌ Error adding nodemailer:", err.message);
             }
             break; 
-                    case "8":
+                    case "9":
                         console.log("✨HAPPY CODING - Thank You For Using✨")
                         exit(0);
             default:
