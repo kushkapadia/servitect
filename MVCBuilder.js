@@ -495,6 +495,11 @@ const Messages = require("../constants/Messages");
   const ${modelname} = require("../models/${modelname}");
 const jwt = require("jsonwebtoken");
 
+exports.create${modelname} = async function(req, res){
+  let ${modelname.toLowerCase()} = new ${modelname}(req.body)
+ let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.create${modelname}();
+ new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, "Created")
+}
 
 exports.getById = async function (req, res) {
   let ${modelname.toLowerCase()} = new ${modelname} ()
@@ -596,11 +601,7 @@ exports.doesEmailExist = async function (req, res) {
   );
 };
 
-exports.create${modelname} = async function(req, res){
-  let ${modelname.toLowerCase()} = new ${modelname}(req.body)
- let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.create${modelname}();
- new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, "Created")
-}
+
 
 exports.getById = async function(req, res){
   let ${modelname.toLowerCase()} = new ${modelname}()
