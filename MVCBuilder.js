@@ -154,7 +154,7 @@ app.use(cors());
 module.exports = app;
 `,
   envFileContent: (PORT, CONNECTION_STRING) =>
-    `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwerty`,
+    `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
   gitIgnoreFileContent: `/node_modules\n.env`,
   packageJsonFileContent: `{
   "name": "backend",
@@ -200,6 +200,18 @@ module.exports = app;
         
           //DATA Messages
           Messages.prototype.SUCCESSFULLY_RECEIVED = 'Successfully received.';
+
+          // Cloudinary Messages
+          Messages.prototype.FILE_NOT_FOUND = "File not found.";
+
+          Messages.prototype.SUCCESSFULLY_SAVED_TO_CLOUDINARY =
+            "Successfully saved to cloudinary.";
+          Messages.prototype.FAILED_TO_SAVE_TO_CLOUDINARY =
+            "Failed to save to cloudinary.";
+          Messages.prototype.UPLOAD_SUCCESS = "File uploaded successfully.";
+          Messages.prototype.SUCCESSFULLY_FILE_DELETED = "Successfully file deleted.";
+          Messages.prototype.FAILED_TO_DELETE_FROM_CLOUDINARY =
+            "Failed to delete from cloudinary.";
         module.exports = Messages;
         
         `,
@@ -247,7 +259,15 @@ const JsonResponse = require('./JsonResponse');
 
 exports.verifyToken = function (req, res, next) {
   try{
-    req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET)
+    const bearerToken = req.headers["authorization"];
+
+    const bearer = bearerToken.split(" ");
+
+    const token = bearer[1];
+
+    console.log(token);
+
+    req.apiUser = jwt.verify(token, process.env.JWTSECRET);
     console.log(req.apiUser)  
     next()
   } catch(error){
@@ -475,18 +495,259 @@ try {
 }
 `,
   uploadControllerFile: `
-    const path = require('path');
-exports.uploadDocument = async function(req, res){
-  
-          console.log(req.files)
-          const file = req.files.image
-          console.log(file);
-          const fileName = new Date().getTime().toString() + path.extname(file.name)
-          const savePath = path.join(__dirname, 'uploads', fileName)
-          await file.mv(savePath)
-          new JsonResponse(req, res).jsonSuccess(savePath, new Messages().SUCCESSFULLY_RECEIVED)
+const Messages = require("../constants/Messages");
+const JsonResponse = require("../helper/JsonResponse");
+const jwt = require("jsonwebtoken");
+const {
+  uploadSingleFileOnCloudinary,
+  uploadMultipleFilesOnCloudinary,
+  deleteSingleFileFromCloudinary,
+  deleteMultipleFilesFromCloudinary,
+} = require("../helper/cloudinary");
+
+// Upload Files
+
+exports.uploadSingleFile = async function (req, res) {
+  console.log("Request File");
+
+  // If you are sending only one file only use req.file
+  console.log(req.file);
+
+  // Get the Local Path from the server which will be stored by multer defined in the middleware
+  const image = req.file?.path;
+
+  console.log("LocalPath: ", image);
+
+  // Use the local Path to upload the file to Cloudinary
+  const result = await uploadSingleFileOnCloudinary(image);
+
+  console.log("Result" + result);
+
+  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
+  if (result == null) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
+    );
+    return;
   }
+
+  console.log("Cloudinary Result: ", result);
+
+  new JsonResponse(req, res).jsonSuccess(
+    result.url,
+    new Messages().SUCCESSFULLY_RECEIVED
+  );
+};
+
+exports.uploadMultipleFiles = async function (req, res) {
+  // Get the Local Path from the server which will be stored by multer defined in the middleware
+  const attachments = req.files;
+
+  // If there are no attachments
+  if (attachments.length == 0) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  // Use the local Path to upload the file to Cloudinary
+  const result = await uploadMultipleFilesOnCloudinary(attachments);
+
+  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
+  if (result == null) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
+    );
+    return;
+  }
+
+  console.log("Cloudinary Result: ", result);
+
+  new JsonResponse(req, res).jsonSuccess(
+    result,
+    new Messages().SUCCESSFULLY_RECEIVED
+  );
+};
+
+exports.uploadFiles = async function (req, res) {
+  // Get the Local Path from the server which will be stored by multer defined in the middleware
+  const userImagePath = req.files?.userImage[0].path;
+  const coverPhotoPath = req.files?.coverPhoto[0].path;
+
+  // If there are no images
+  if (userImagePath == null || coverPhotoPath == null) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  // Use the local Path to upload the file to Cloudinary
+  const userImageURL = await uploadSingleFileOnCloudinary(userImagePath);
+  const coverPhotoURL = await uploadSingleFileOnCloudinary(coverPhotoPath);
+
+  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
+  if (!userImageURL || !coverPhotoURL) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
+    );
+    return;
+  }
+
+  console.log("Cloudinary Result: ", userImageURL, coverPhotoURL);
+
+  new JsonResponse(req, res).jsonSuccess(
+    {
+      userImageURL: userImageURL.url,
+      coverPhotoURL: coverPhotoURL.url,
+    },
+    new Messages().SUCCESSFULLY_RECEIVED
+  );
+};
+
+// Delete Files
+
+exports.deleteSingleFile = async function (req, res) {
+  const publicId = req.body.publicId;
+
+  // Delete the file from Cloudinary
+  const result = await deleteSingleFileFromCloudinary(publicId);
+
+  // Make sure if the file has been deleted from Cloudinary
+  if (!result) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_DELETE_FROM_CLOUDINARY
+    );
+    return;
+  }
+
+  new JsonResponse(req, res).jsonSuccess(
+    null,
+    new Messages().SUCCESSFULLY_FILE_DELETED
+  );
+};
+
+exports.deleteMultipleFiles = async function (req, res) {
+  const publicIds = req.body.publicIds;
+
+  // Delete the file from Cloudinary
+  const result = await deleteMultipleFilesFromCloudinary(publicIds);
+
+  // Make sure if the file has been deleted from Cloudinary
+  if (!result) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_DELETE_FROM_CLOUDINARY
+    );
+    return;
+  }
+
+  new JsonResponse(req, res).jsonSuccess(
+    null,
+    new Messages().SUCCESSFULLY_FILE_DELETED
+  );
+};
+
     `,
+  cloudinaryHelperFileContent: ` 
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+const Messages = require("../constants/Messages");
+const JsonResponse = require("../helper/JsonResponse");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const uploadSingleFileOnCloudinary = async (localFilePath) => {
+  if (!localFilePath) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  const result = await cloudinary.uploader.upload(localFilePath, {
+    resource_type: "auto",
+  });
+  fs.unlinkSync(localFilePath);
+
+  console.log("Result" + result.url);
+
+  return result;
+};
+
+const uploadMultipleFilesOnCloudinary = async (attachments) => {
+  const urls = await Promise.all(
+    attachments.map(async (attachment) => {
+      const result = await cloudinary.uploader.upload(attachment.path, {
+        resource_type: "auto",
+      });
+      return result.url;
+    })
+  );
+
+  attachments.map((attachment) => {
+    fs.unlinkSync(attachment.path);
+  });
+
+  console.log("Result" + urls);
+
+  return urls;
+};
+
+const deleteSingleFileFromCloudinary = async (publicId) => {
+  if (!publicId) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  const result = await cloudinary.uploader.destroy(publicId);
+  console.log("Result" + result);
+
+  return result;
+};
+
+const deleteMultipleFilesFromCloudinary = async (publicIds) => {
+  if (!publicIds) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  const result = await cloudinary.api.delete_resources(publicIds);
+  console.log("Result" + result);
+
+  return result;
+};
+
+module.exports = {
+  uploadSingleFileOnCloudinary,
+  uploadMultipleFilesOnCloudinary,
+  deleteSingleFileFromCloudinary,
+  deleteMultipleFilesFromCloudinary,
+};
+  `,
+  uploadMiddlewareFileContent: `
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/images/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = new Date().getTime().toString();
+    console.log(req + " " + file);
+
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+module.exports = upload;
+  `
+  , 
 
   nonActorControllerFileContent: (modelname) => ` 
 const Messages = require("../constants/Messages");
@@ -856,6 +1117,7 @@ const initializers = {
         resolve(answer);
       });
     });
+   
 
     await fs.appendFile(
       ".env",
@@ -1220,21 +1482,31 @@ async function addChatInterface() {
   }
 }
 
-//Uplaod Interface
-async function addFileUpload() {
-  await fs.appendFile(
-    `./controllers/uploadController.js`,
-    fileContent.uploadControllerFile
-  );
 
-  //add chat routes
-  try {
-    // Read the file content
-    let data = await fs.readFile("./router.js", "utf8");
-    const importContent = `const uploadController = require('./controllers/uploadController');`;
+
+//Uplaod Interface
+async function createFileUploadRoutes() {
+  let data = await fs.readFile("./router.js", "utf8");
+    const importContent = `const uploadController = require('./controllers/uploadController');\nconst upload = require('./middleware/multer');`;
     const routeContent = `
-    //File Upload
-    router.post('/upload-doc', AuthHelper.verifyToken, new TryCatch(uploadController.uploadDocument).tryCatchGlobe())
+    // Add Single file to Cloudinary
+    router.post("/uploadSingleFile", AuthHelper.verifyToken, upload.single("image"), new TryCatch(uploadController.uploadSingleFile).tryCatchGlobe());
+
+    // Add Multiple files to cloudinary - {Array of Attachments}
+    router.post("/uploadMultipleFiles", AuthHelper.verifyToken, upload.array("attachments"), new TryCatch(uploadController.uploadMultipleFiles).tryCatchGlobe());
+
+    // Add files according to fields to cloudinary
+    // [
+    //   { name: 'avatar', maxCount: 1 },
+    //   { name: 'gallery', maxCount: 8 }
+    // ]
+    router.post("/uploadFiles",AuthHelper.verifyToken,upload.fields([{name: "userImage"},{name: "coverPhoto",}]),new TryCatch(uploadController.uploadFiles).tryCatchGlobe());
+
+    // Delete Single file from cloudinary
+    router.post("/deleteSingleFile", AuthHelper.verifyToken, new TryCatch(uploadController.deleteSingleFile).tryCatchGlobe());
+
+    // Delete Multiple files from cloudinary - {Array of Public Ids}
+    router.post("/deleteMultipleFiles", AuthHelper.verifyToken, new TryCatch(uploadController.deleteMultipleFiles).tryCatchGlobe());
     `;
     const importMarker = "//imports here";
     const routeMarker = "//code here";
@@ -1247,12 +1519,64 @@ async function addFileUpload() {
       routeContent,
       data
     );
-    rl.close();
-    menu();
-  } catch (err) {
-    console.error(`❌ Error: ${err.message}`);
-  }
 }
+
+async function addFileUpload() {
+  console.log("📦 Installing Packages...");
+
+  await installDependency("multer cloudinary");
+  console.log("📦 Installation Complete...");
+
+  // After installing the packages, get their credentials
+  const CLOUD_NAME = await new Promise((resolve) => {
+    rl.question("👉 Enter the Cloudinary Cloud Name 💁‍♂️ : ", (answer) => {
+      resolve(answer);
+    });
+  });
+  const API_KEY = await new Promise((resolve) => {
+    rl.question("👉 Enter the Cloudinary API Key 💁‍♂️ : ", (answer) => {
+      resolve(answer);
+    });
+  });
+  const API_SECRET = await new Promise((resolve) => {
+    rl.question("👉 Enter the Cloudinary API Secret 💁‍♂️ : ", (answer) => {
+      resolve(answer);
+    });
+  });
+
+  await fs.appendFile(
+    ".env",
+    `\nCLOUDINARY_CLOUD_NAME=${CLOUD_NAME}\nCLOUDINARY_API_KEY=${API_KEY}\nCLOUDINARY_API_SECRET=${API_SECRET}`
+  );
+
+  // Adding upload routes
+  await createFileUploadRoutes();
+
+  // Adding the middleware and the helper file
+  await fs.appendFile(`./helper/cloudinary.js`, fileContent.cloudinaryHelperFileContent);
+
+  const middlewareDir = path.join(__dirname, "middleware");
+  await fs.mkdir(middlewareDir, { recursive: true });
+  await fs.appendFile(`./middleware/multer.js`, fileContent.uploadMiddlewareFileContent);
+
+  // Adding upload Controller
+  await fs.appendFile(
+    `./controllers/uploadController.js`,
+    fileContent.uploadControllerFile
+  );
+
+  // Add the public files
+  const publicDir = path.join(__dirname, "public");
+  await fs.mkdir(publicDir, { recursive: true });
+  const imagesDir = path.join(publicDir, "images");
+  await fs.mkdir(imagesDir, { recursive: true });
+
+
+  rl.close();
+  menu();
+}
+
+
 
 async function createFirebaseRoutes() {
   let data = await fs.readFile("./router.js", "utf8");
@@ -1284,6 +1608,7 @@ router.post("/firebase/sendNotificationsToMultipleTopics", AuthHelper.verifyToke
     data
   );
 }
+
 async function addFirebaseFCM() {
   console.log("📦 Installing Packages...");
 
@@ -1344,6 +1669,8 @@ async function addFirebaseFCM() {
   rl.close();
   menu();
 }
+
+
 
 async function addWhatsapp() {
   console.log("📦 Installing Axios...");
