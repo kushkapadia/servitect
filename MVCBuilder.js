@@ -1,24 +1,25 @@
-const path = require("path")
-const readline = require("readline")
-const { exec } = require("child_process")
-let rl
+const path = require("path");
+const readline = require("readline");
+const { exec } = require("child_process");
+let rl;
 // const fs = require('fs');
-const fs = require("fs/promises")
-const { exit } = require("process")
-let content = ""
-let attributes = ""
-let nonActorAttributes = ""
-let actorModelFileContent = ""
-let ModelFileContent = ""
+const fs = require("fs/promises");
+const { exit } = require("process");
+let content = "";
+let attributes = "";
+let nonActorAttributes = "";
+let actorModelFileContent = "";
+let ModelFileContent = "";
 
 //funct to start readline interface.
 function ci() {
   rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
-  })
+    output: process.stdout,
+  });
 }
-const dependencyList = "bcryptjs express jsonwebtoken connect-mongo dotenv morgan nodemon express-async-handler cors http-status-codes"
+const dependencyList =
+  "bcryptjs express jsonwebtoken connect-mongo dotenv morgan nodemon express-async-handler cors http-status-codes";
 
 // all file contents
 const fileContent = {
@@ -152,7 +153,8 @@ app.use(cors());
 
 module.exports = app;
 `,
-  envFileContent: (PORT, CONNECTION_STRING) => `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwerty`,
+  envFileContent: (PORT, CONNECTION_STRING) =>
+    `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
   gitIgnoreFileContent: `/node_modules\n.env`,
   packageJsonFileContent: `{
   "name": "backend",
@@ -160,7 +162,8 @@ module.exports = app;
   "description": "",
   "main": "index.js",
   "scripts": {
-    "server": "nodemon db.js"
+    "server": "nodemon db.js",
+    "watch": "start nodemon db.js"
   },
   "keywords": [],
   "author": "",
@@ -197,6 +200,18 @@ module.exports = app;
         
           //DATA Messages
           Messages.prototype.SUCCESSFULLY_RECEIVED = 'Successfully received.';
+
+          // Cloudinary Messages
+          Messages.prototype.FILE_NOT_FOUND = "File not found.";
+
+          Messages.prototype.SUCCESSFULLY_SAVED_TO_CLOUDINARY =
+            "Successfully saved to cloudinary.";
+          Messages.prototype.FAILED_TO_SAVE_TO_CLOUDINARY =
+            "Failed to save to cloudinary.";
+          Messages.prototype.UPLOAD_SUCCESS = "File uploaded successfully.";
+          Messages.prototype.SUCCESSFULLY_FILE_DELETED = "Successfully file deleted.";
+          Messages.prototype.FAILED_TO_DELETE_FROM_CLOUDINARY =
+            "Failed to delete from cloudinary.";
         module.exports = Messages;
         
         `,
@@ -244,7 +259,15 @@ const JsonResponse = require('./JsonResponse');
 
 exports.verifyToken = function (req, res, next) {
   try{
-    req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET)
+    const bearerToken = req.headers["authorization"];
+
+    const bearer = bearerToken.split(" ");
+
+    const token = bearer[1];
+
+    console.log(token);
+
+    req.apiUser = jwt.verify(token, process.env.JWTSECRET);
     console.log(req.apiUser)  
     next()
   } catch(error){
@@ -472,20 +495,261 @@ try {
 }
 `,
   uploadControllerFile: `
-    const path = require('path');
-exports.uploadDocument = async function(req, res){
-  
-          console.log(req.files)
-          const file = req.files.image
-          console.log(file);
-          const fileName = new Date().getTime().toString() + path.extname(file.name)
-          const savePath = path.join(__dirname, 'uploads', fileName)
-          await file.mv(savePath)
-          new JsonResponse(req, res).jsonSuccess(savePath, new Messages().SUCCESSFULLY_RECEIVED)
-  }
-    `,
+const Messages = require("../constants/Messages");
+const JsonResponse = require("../helper/JsonResponse");
+const jwt = require("jsonwebtoken");
+const {
+  uploadSingleFileOnCloudinary,
+  uploadMultipleFilesOnCloudinary,
+  deleteSingleFileFromCloudinary,
+  deleteMultipleFilesFromCloudinary,
+} = require("../helper/cloudinary");
 
-  nonActorControllerFileContent: modelname => ` 
+// Upload Files
+
+exports.uploadSingleFile = async function (req, res) {
+  console.log("Request File");
+
+  // If you are sending only one file only use req.file
+  console.log(req.file);
+
+  // Get the Local Path from the server which will be stored by multer defined in the middleware
+  const image = req.file?.path;
+
+  console.log("LocalPath: ", image);
+
+  // Use the local Path to upload the file to Cloudinary
+  const result = await uploadSingleFileOnCloudinary(image);
+
+  console.log("Result" + result);
+
+  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
+  if (result == null) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
+    );
+    return;
+  }
+
+  console.log("Cloudinary Result: ", result);
+
+  new JsonResponse(req, res).jsonSuccess(
+    result.url,
+    new Messages().SUCCESSFULLY_RECEIVED
+  );
+};
+
+exports.uploadMultipleFiles = async function (req, res) {
+  // Get the Local Path from the server which will be stored by multer defined in the middleware
+  const attachments = req.files;
+
+  // If there are no attachments
+  if (attachments.length == 0) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  // Use the local Path to upload the file to Cloudinary
+  const result = await uploadMultipleFilesOnCloudinary(attachments);
+
+  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
+  if (result == null) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
+    );
+    return;
+  }
+
+  console.log("Cloudinary Result: ", result);
+
+  new JsonResponse(req, res).jsonSuccess(
+    result,
+    new Messages().SUCCESSFULLY_RECEIVED
+  );
+};
+
+exports.uploadFiles = async function (req, res) {
+  // Get the Local Path from the server which will be stored by multer defined in the middleware
+  const userImagePath = req.files?.userImage[0].path;
+  const coverPhotoPath = req.files?.coverPhoto[0].path;
+
+  // If there are no images
+  if (userImagePath == null || coverPhotoPath == null) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  // Use the local Path to upload the file to Cloudinary
+  const userImageURL = await uploadSingleFileOnCloudinary(userImagePath);
+  const coverPhotoURL = await uploadSingleFileOnCloudinary(coverPhotoPath);
+
+  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
+  if (!userImageURL || !coverPhotoURL) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
+    );
+    return;
+  }
+
+  console.log("Cloudinary Result: ", userImageURL, coverPhotoURL);
+
+  new JsonResponse(req, res).jsonSuccess(
+    {
+      userImageURL: userImageURL.url,
+      coverPhotoURL: coverPhotoURL.url,
+    },
+    new Messages().SUCCESSFULLY_RECEIVED
+  );
+};
+
+// Delete Files
+
+exports.deleteSingleFile = async function (req, res) {
+  const publicId = req.body.publicId;
+
+  // Delete the file from Cloudinary
+  const result = await deleteSingleFileFromCloudinary(publicId);
+
+  // Make sure if the file has been deleted from Cloudinary
+  if (!result) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_DELETE_FROM_CLOUDINARY
+    );
+    return;
+  }
+
+  new JsonResponse(req, res).jsonSuccess(
+    null,
+    new Messages().SUCCESSFULLY_FILE_DELETED
+  );
+};
+
+exports.deleteMultipleFiles = async function (req, res) {
+  const publicIds = req.body.publicIds;
+
+  // Delete the file from Cloudinary
+  const result = await deleteMultipleFilesFromCloudinary(publicIds);
+
+  // Make sure if the file has been deleted from Cloudinary
+  if (!result) {
+    new JsonResponse(req, res).jsonSuccess(
+      null,
+      new Messages().FAILED_TO_DELETE_FROM_CLOUDINARY
+    );
+    return;
+  }
+
+  new JsonResponse(req, res).jsonSuccess(
+    null,
+    new Messages().SUCCESSFULLY_FILE_DELETED
+  );
+};
+
+    `,
+  cloudinaryHelperFileContent: ` 
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+const Messages = require("../constants/Messages");
+const JsonResponse = require("../helper/JsonResponse");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const uploadSingleFileOnCloudinary = async (localFilePath) => {
+  if (!localFilePath) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  const result = await cloudinary.uploader.upload(localFilePath, {
+    resource_type: "auto",
+  });
+  fs.unlinkSync(localFilePath);
+
+  console.log("Result" + result.url);
+
+  return result;
+};
+
+const uploadMultipleFilesOnCloudinary = async (attachments) => {
+  const urls = await Promise.all(
+    attachments.map(async (attachment) => {
+      const result = await cloudinary.uploader.upload(attachment.path, {
+        resource_type: "auto",
+      });
+      return result.url;
+    })
+  );
+
+  attachments.map((attachment) => {
+    fs.unlinkSync(attachment.path);
+  });
+
+  console.log("Result" + urls);
+
+  return urls;
+};
+
+const deleteSingleFileFromCloudinary = async (publicId) => {
+  if (!publicId) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  const result = await cloudinary.uploader.destroy(publicId);
+  console.log("Result" + result);
+
+  return result;
+};
+
+const deleteMultipleFilesFromCloudinary = async (publicIds) => {
+  if (!publicIds) {
+    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
+    return;
+  }
+
+  const result = await cloudinary.api.delete_resources(publicIds);
+  console.log("Result" + result);
+
+  return result;
+};
+
+module.exports = {
+  uploadSingleFileOnCloudinary,
+  uploadMultipleFilesOnCloudinary,
+  deleteSingleFileFromCloudinary,
+  deleteMultipleFilesFromCloudinary,
+};
+  `,
+  uploadMiddlewareFileContent: `
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/images/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = new Date().getTime().toString();
+    console.log(req + " " + file);
+
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+module.exports = upload;
+  `
+  , 
+
+  nonActorControllerFileContent: (modelname) => ` 
 const Messages = require("../constants/Messages");
   const JsonResponse = require("../helper/JsonResponse");
   const TryCatch = require("../helper/TryCatch");
@@ -519,7 +783,7 @@ await ${modelname.toLowerCase()}.deleteById()
 new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
 }
     `,
-  actorControllerFileContent: modelname => ` 
+  actorControllerFileContent: (modelname) => ` 
     const Messages = require("../constants/Messages");
 const JsonResponse = require("../helper/JsonResponse");
 const TryCatch = require("../helper/TryCatch");
@@ -673,7 +937,7 @@ exports.deleteById= async function(req, res){
                 
                 module.exports = ${modelName};             
             `,
-  actorModelFileContent: modelName => `
+  actorModelFileContent: (modelName) => `
                 const bcrypt = require("bcryptjs");
                 const Messages = require("../constants/Messages");
                 const TryCatch = require("../helper/TryCatch");
@@ -829,244 +1093,289 @@ exports.getChatConvo = async function(req, res){
 
 }
     
-    `
-}
+    `,
+};
 // initializer functions
 const initializers = {
   initDbConnection: async function () {
-    await fs.appendFile("./db.js", fileContent.dbFileContent)
-    console.log("✅ Database Config file created successfully.\n")
+    await fs.appendFile("./db.js", fileContent.dbFileContent);
+    console.log("✅ Database Config file created successfully.\n");
   },
 
   initMainAppFile: async function () {
-    await fs.appendFile("./app.js", fileContent.appFileContent)
-    console.log("✅ App.js file created successfully.\n")
+    await fs.appendFile("./app.js", fileContent.appFileContent);
+    console.log("✅ App.js file created successfully.\n");
   },
   initEnv: async function () {
-    const PORT = await new Promise(resolve => {
-      rl.question("👉Enter the Port [Default-4000] 💁‍♂️ : ", answer => {
-        resolve(answer)
-      })
-    })
-    const CONNECTION_STRING = await new Promise(resolve => {
-      rl.question("👉Enter the Connection String 💁‍♂️ : ", answer => {
-        resolve(answer)
-      })
-    })
+    const PORT = await new Promise((resolve) => {
+      rl.question("👉Enter the Port [Default-4000] 💁‍♂️ : ", (answer) => {
+        resolve(answer);
+      });
+    });
+    const CONNECTION_STRING = await new Promise((resolve) => {
+      rl.question("👉Enter the Connection String 💁‍♂️ : ", (answer) => {
+        resolve(answer);
+      });
+    });
+   
 
-    await fs.appendFile(".env", fileContent.envFileContent(PORT, CONNECTION_STRING))
+    await fs.appendFile(
+      ".env",
+      fileContent.envFileContent(PORT, CONNECTION_STRING)
+    );
 
-    console.log("✅ Env file created successfully.\n")
+    console.log("✅ Env file created successfully.\n");
   },
 
   initGitIgnore: async function () {
-    await fs.appendFile(".gitignore", fileContent.gitIgnoreFileContent)
-    console.log("✅ Git Ignore file created successfully.\n")
+    await fs.appendFile(".gitignore", fileContent.gitIgnoreFileContent);
+    console.log("✅ Git Ignore file created successfully.\n");
   },
 
   initPackageFile: async function () {
-    await fs.appendFile("package.json", fileContent.packageJsonFileContent)
-    console.log("✅ Package.json file created successfully.\n")
+    await fs.appendFile("package.json", fileContent.packageJsonFileContent);
+    console.log("✅ Package.json file created successfully.\n");
   },
 
   initConstants: async function () {
-    const contsantsDir = path.join(__dirname, "constants")
-    await fs.mkdir(contsantsDir, { recursive: true })
-    console.log("✅ Constants folder created successfully.")
-    await fs.writeFile("./constants/Messages.js", fileContent.messageFileContent)
-    console.log("✅ Messages file created successfully.\n")
+    const contsantsDir = path.join(__dirname, "constants");
+    await fs.mkdir(contsantsDir, { recursive: true });
+    console.log("✅ Constants folder created successfully.");
+    await fs.writeFile(
+      "./constants/Messages.js",
+      fileContent.messageFileContent
+    );
+    console.log("✅ Messages file created successfully.\n");
   },
 
   initMVC: async function () {
-    const modelsDir = path.join(__dirname, "models")
-    await fs.mkdir(modelsDir, { recursive: true })
-    console.log("✅ Models folder created successfully.")
+    const modelsDir = path.join(__dirname, "models");
+    await fs.mkdir(modelsDir, { recursive: true });
+    console.log("✅ Models folder created successfully.");
 
-    const controllersDir = path.join(__dirname, "controllers")
-    await fs.mkdir(controllersDir, { recursive: true })
-    console.log("✅ Controllers folder created successfully.")
+    const controllersDir = path.join(__dirname, "controllers");
+    await fs.mkdir(controllersDir, { recursive: true });
+    console.log("✅ Controllers folder created successfully.");
 
-    await fs.writeFile("router.js", fileContent.routerFileContent)
-    console.log("✅ Router file created successfully.\n")
+    await fs.writeFile("router.js", fileContent.routerFileContent);
+    console.log("✅ Router file created successfully.\n");
   },
   initHelpers: async function () {
-    const helperDir = path.join(__dirname, "helper")
-    await fs.mkdir(helperDir, { recursive: true })
-    console.log("✅ Helper folder created successfully.\n")
-    await fs.writeFile("./helper/JsonResponse.js", fileContent.JsonResponseFileContent)
-    console.log("✅ JsonResponse file created successfully.")
-    await fs.writeFile("./helper/JWTAuthHelper.js", fileContent.JWTAuthHelperFileContent)
-    console.log("✅ JWTAuthHelper file created successfully.")
+    const helperDir = path.join(__dirname, "helper");
+    await fs.mkdir(helperDir, { recursive: true });
+    console.log("✅ Helper folder created successfully.\n");
+    await fs.writeFile(
+      "./helper/JsonResponse.js",
+      fileContent.JsonResponseFileContent
+    );
+    console.log("✅ JsonResponse file created successfully.");
+    await fs.writeFile(
+      "./helper/JWTAuthHelper.js",
+      fileContent.JWTAuthHelperFileContent
+    );
+    console.log("✅ JWTAuthHelper file created successfully.");
 
-    await fs.writeFile("./helper/TryCatch.js", fileContent.tryCatchFileContent)
-    console.log("✅ TryCatch file created successfully.\n")
-  }
-}
+    await fs.writeFile("./helper/TryCatch.js", fileContent.tryCatchFileContent);
+    console.log("✅ TryCatch file created successfully.\n");
+  },
+};
 // dependency installer
-const installDependency = dependency => {
+const installDependency = (dependency) => {
   return new Promise((resolve, reject) => {
     exec(`npm install ${dependency}`, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error installing ${dependency}:`, stderr)
-        reject(error)
+        console.error(`Error installing ${dependency}:`, stderr);
+        reject(error);
       } else {
-        console.log(`Successfully installed ${dependency}:`, stdout)
-        resolve(stdout)
+        console.log(`Successfully installed ${dependency}:`, stdout);
+        resolve(stdout);
       }
-    })
-  })
-}
+    });
+  });
+};
 //code inserter
-async function insertCode(importMarker, routeMarker, filePath, importContent, routeContent, data) {
+async function insertCode(
+  importMarker,
+  routeMarker,
+  filePath,
+  importContent,
+  routeContent,
+  data
+) {
   // Insert import content
-  let importIndex = data.indexOf(importMarker)
+  let importIndex = data.indexOf(importMarker);
   if (importIndex !== -1) {
-    data = data.slice(0, importIndex + importMarker.length) + "\n" + importContent + data.slice(importIndex + importMarker.length)
+    data =
+      data.slice(0, importIndex + importMarker.length) +
+      "\n" +
+      importContent +
+      data.slice(importIndex + importMarker.length);
   } else {
-    console.error(`Marker "${importMarker}" not found in file.`)
+    console.error(`Marker "${importMarker}" not found in file.`);
   }
 
   // Insert route content
-  let routeIndex = data.indexOf(routeMarker)
+  let routeIndex = data.indexOf(routeMarker);
   if (routeIndex !== -1) {
-    data = data.slice(0, routeIndex + routeMarker.length) + "\n" + routeContent + data.slice(routeIndex + routeMarker.length)
+    data =
+      data.slice(0, routeIndex + routeMarker.length) +
+      "\n" +
+      routeContent +
+      data.slice(routeIndex + routeMarker.length);
   } else {
-    console.error(`Marker "${routeMarker}" not found in file.`)
+    console.error(`Marker "${routeMarker}" not found in file.`);
   }
 
   // Write the modified content back to the file
-  await fs.writeFile(filePath, data, "utf8")
-  console.log(`✅ Content appended below the markers "${importMarker}" and "${routeMarker}" successfully!`)
+  await fs.writeFile(filePath, data, "utf8");
+  console.log(
+    `✅ Content appended below the markers "${importMarker}" and "${routeMarker}" successfully!`
+  );
 }
 //Initial Initializing
 // Ensure models directory exists
 async function initialize() {
   try {
-    initializers.initPackageFile()
-    console.log("📦 Installing Packages...")
-    await installDependency(dependencyList)
-    console.log("✅ Installation Successfull...")
-    await initializers.initMainAppFile()
-    await initializers.initDbConnection()
-    await initializers.initEnv()
-    await initializers.initGitIgnore()
-    await initializers.initConstants()
-    await initializers.initHelpers()
-    await initializers.initMVC()
-    rl.close()
-    menu()
+    initializers.initPackageFile();
+    console.log("📦 Installing Packages...");
+    await installDependency(dependencyList);
+    console.log("✅ Installation Successfull...");
+    await initializers.initMainAppFile();
+    await initializers.initDbConnection();
+    await initializers.initEnv();
+    await initializers.initGitIgnore();
+    await initializers.initConstants();
+    await initializers.initHelpers();
+    await initializers.initMVC();
+    rl.close();
+    menu();
   } catch (err) {
-    console.error("❌ Error during initialization:", err.message)
+    console.error("❌ Error during initialization:", err.message);
   }
 }
 
 async function createActorModel() {
   try {
-    content = ""
+    content = "";
 
-    const modelName = await new Promise(resolve => {
-      rl.question("👉Enter the Name of the 💁‍♂️ *ACTOR MODEL* [First Letter Cap] : ", answer => {
-        resolve(answer)
-      })
-    })
+    const modelName = await new Promise((resolve) => {
+      rl.question(
+        "👉Enter the Name of the 💁‍♂️ *ACTOR MODEL* [First Letter Cap] : ",
+        (answer) => {
+          resolve(answer);
+        }
+      );
+    });
 
     // modelNameGlob = modelName;
-    await askForAttributes(modelName)
+    await askForAttributes(modelName);
   } catch (err) {
-    console.error("❌ Error:", err.message)
+    console.error("❌ Error:", err.message);
   }
 }
 
 async function askForAttributes(modelName) {
-  rl.question("Do you want to Add an attribute [yes/no] ? :", async ans => {
+  rl.question("Do you want to Add an attribute [yes/no] ? :", async (ans) => {
     switch (ans) {
       case "yes":
-        rl.question("👉Enter the Attribute Name: ", async attributeName => {
+        rl.question("👉Enter the Attribute Name: ", async (attributeName) => {
           // attributeNameGlob = attributeName;
-          attributes += `${attributeName}: this.data.${attributeName},\n`
-          askForAttributes(modelName)
-        })
-        break
+          attributes += `${attributeName}: this.data.${attributeName},\n`;
+          askForAttributes(modelName);
+        });
+        break;
       case "no":
-        actorModelFileContent += fileContent.actorModelFileContent(modelName)
+        actorModelFileContent += fileContent.actorModelFileContent(modelName);
 
-        await createActorControllerfile(modelName)
+        await createActorControllerfile(modelName);
 
-        await addActorRoutes(modelName)
-        await fs.appendFile(`./models/${modelName}.js`, `${actorModelFileContent}`)
-        console.log("✅ Model File Created Successfully!\n")
-        rl.close()
-        menu()
-        break
+        await addActorRoutes(modelName);
+        await fs.appendFile(
+          `./models/${modelName}.js`,
+          `${actorModelFileContent}`
+        );
+        console.log("✅ Model File Created Successfully!\n");
+        rl.close();
+        menu();
+        break;
       default:
-        console.log("❌Invalid Input. Please Enter Valid Input\n")
-        await askForAttributes(modelName) // recursive call to ask again
-        break
+        console.log("❌Invalid Input. Please Enter Valid Input\n");
+        await askForAttributes(modelName); // recursive call to ask again
+        break;
     }
-  })
+  });
 }
 
 //Non actor model
 
 async function createModel() {
-  content = ""
+  content = "";
 
-  rl.question("👉Enter the Name of the *MODEL* : ", async modelName => {
+  rl.question("👉Enter the Name of the *MODEL* : ", async (modelName) => {
     // modelNameGlob = modelName;
-    await askForNonActorAttributes(modelName)
-  })
+    await askForNonActorAttributes(modelName);
+  });
 }
 
 async function askForNonActorAttributes(modelName) {
-  rl.question("Do you want to Add an attribute [yes/no]? : ", async ans => {
+  rl.question("Do you want to Add an attribute [yes/no]? : ", async (ans) => {
     switch (ans) {
       case "yes":
-        rl.question("👉Enter the Attribute Name: ", async attributeName => {
+        rl.question("👉Enter the Attribute Name: ", async (attributeName) => {
           // attributeNameGlob = attributeName;
-          nonActorAttributes += `${attributeName}: this.data.${attributeName},\n`
-          await askForNonActorAttributes(modelName)
-        })
+          nonActorAttributes += `${attributeName}: this.data.${attributeName},\n`;
+          await askForNonActorAttributes(modelName);
+        });
 
-        break
+        break;
       case "no":
         // console.log(nonActorAttributes)
         // flCapitalisedSubModuleName = capitalizeFirstLetter(subModuleName)
-        ModelFileContent += fileContent.nonActorModelFileContent(modelName, nonActorAttributes)
+        ModelFileContent += fileContent.nonActorModelFileContent(
+          modelName,
+          nonActorAttributes
+        );
 
-        await addNonActorRoutes(modelName)
-        await createNonActorController(modelName)
-        await fs.appendFile(`./models/${modelName}.js`, `${ModelFileContent}`)
+        await addNonActorRoutes(modelName);
+        await createNonActorController(modelName);
+        await fs.appendFile(`./models/${modelName}.js`, `${ModelFileContent}`);
 
-        console.log("✅ Model File created successfully!")
-        rl.close()
-        menu()
-        break
+        console.log("✅ Model File created successfully!");
+        rl.close();
+        menu();
+        break;
       default:
-        console.log("❌ Invalid Input. Please Enter Valid Input ")
-        await askForAttributes(modelName) // recursive call to ask again
-        break
+        console.log("❌ Invalid Input. Please Enter Valid Input ");
+        await askForAttributes(modelName); // recursive call to ask again
+        break;
     }
-  })
+  });
 }
 
 async function createActorControllerfile(modelname) {
-  await fs.appendFile(`./controllers/${modelname.toLowerCase()}Controller.js`, fileContent.actorControllerFileContent(modelname))
-  console.log("\n✅ Contoller File Created Successfully!\n")
+  await fs.appendFile(
+    `./controllers/${modelname.toLowerCase()}Controller.js`,
+    fileContent.actorControllerFileContent(modelname)
+  );
+  console.log("\n✅ Contoller File Created Successfully!\n");
 }
 
 async function createNonActorController(modelname) {
-  await fs.appendFile(`./controllers/${modelname.toLowerCase()}Controller.js`, fileContent.nonActorControllerFileContent(modelname))
-  console.log("✅ Contoller File Created Successfully!\n")
+  await fs.appendFile(
+    `./controllers/${modelname.toLowerCase()}Controller.js`,
+    fileContent.nonActorControllerFileContent(modelname)
+  );
+  console.log("✅ Contoller File Created Successfully!\n");
 }
 
 async function addActorRoutes(modelName) {
   try {
     // Read the file content
-    let data = await fs.readFile("./router.js", "utf8")
+    let data = await fs.readFile("./router.js", "utf8");
 
     // Content to append
     const importContent = `const ${modelName.toLowerCase()}Controller = require('./controllers/${modelName.toLowerCase()}Controller');
-`
+`;
 
     const routeContent = `
 //Entity - ${modelName} --start
@@ -1081,26 +1390,33 @@ router.get('/${modelName.toLowerCase()}/get-by-email/:email', AuthHelper.verifyT
 router.get('/${modelName.toLowerCase()}/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
 router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
 //Entity - ${modelName} - End
-`
+`;
 
     // Define marker comments
-    const importMarker = "//imports here"
-    const routeMarker = "//code here"
+    const importMarker = "//imports here";
+    const routeMarker = "//code here";
 
-    await insertCode(importMarker, routeMarker, "./router.js", importContent, routeContent, data)
+    await insertCode(
+      importMarker,
+      routeMarker,
+      "./router.js",
+      importContent,
+      routeContent,
+      data
+    );
   } catch (err) {
-    console.error(`❌ Error: ${err.message}`)
+    console.error(`❌ Error: ${err.message}`);
   }
 }
 
 async function addNonActorRoutes(modelName) {
   try {
     // Read the file content
-    let data = await fs.readFile("./router.js", "utf8")
+    let data = await fs.readFile("./router.js", "utf8");
 
     // Content to append
     const importContent = `const ${modelName.toLowerCase()}Controller = require('./controllers/${modelName.toLowerCase()}Controller');
-`
+`;
 
     const routeContent = `
 //Entity - ${modelName} --start
@@ -1111,72 +1427,161 @@ router.get('/${modelName.toLowerCase()}/get-by-id/:id', AuthHelper.verifyToken, 
 router.get('/${modelName.toLowerCase()}/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
 router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
 //Entity - ${modelName} - End
-`
+`;
 
     // Define marker comments
-    const importMarker = "//imports here"
-    const routeMarker = "//code here"
-    await insertCode(importMarker, routeMarker, "./router.js", importContent, routeContent, data)
+    const importMarker = "//imports here";
+    const routeMarker = "//code here";
+    await insertCode(
+      importMarker,
+      routeMarker,
+      "./router.js",
+      importContent,
+      routeContent,
+      data
+    );
   } catch (err) {
-    console.error(`❌ Error: ${err.message}`)
+    console.error(`❌ Error: ${err.message}`);
   }
 }
 
 //CHAT INTERFACE
 async function addChatInterface() {
-  await fs.appendFile(`./models/Chat.js`, fileContent.chatModelFileContent)
+  await fs.appendFile(`./models/Chat.js`, fileContent.chatModelFileContent);
 
-  await fs.appendFile(`./controllers/chatController.js`, fileContent.chatControllerFileContent)
+  await fs.appendFile(
+    `./controllers/chatController.js`,
+    fileContent.chatControllerFileContent
+  );
 
   //add chat routes
   try {
     // Read the file content
-    let data = await fs.readFile("./router.js", "utf8")
+    let data = await fs.readFile("./router.js", "utf8");
 
-    const importContent = `const chatController = require('./controllers/chatController');`
+    const importContent = `const chatController = require('./controllers/chatController');`;
     const routeContent = `
     router.post('/send-chat', AuthHelper.verifyToken, new TryCatch(chatController.sendChat).tryCatchGlobe())
     router.get('/get-my-chat/:id/:chatContactId',  AuthHelper.verifyToken, new TryCatch(chatController.getChatConvo).tryCatchGlobe())
-    `
-    const importMarker = "//imports here"
-    const routeMarker = "//code here"
+    `;
+    const importMarker = "//imports here";
+    const routeMarker = "//code here";
 
-    await insertCode(importMarker, routeMarker, "./router.js", importContent, routeContent, data)
-    rl.close()
-    menu()
+    await insertCode(
+      importMarker,
+      routeMarker,
+      "./router.js",
+      importContent,
+      routeContent,
+      data
+    );
+    rl.close();
+    menu();
   } catch (err) {
-    console.error(`❌ Error: ${err.message}`)
+    console.error(`❌ Error: ${err.message}`);
   }
 }
+
+
 
 //Uplaod Interface
-async function addFileUpload() {
-  await fs.appendFile(`./controllers/uploadController.js`, fileContent.uploadControllerFile)
-
-  //add chat routes
-  try {
-    // Read the file content
-    let data = await fs.readFile("./router.js", "utf8")
-    const importContent = `const uploadController = require('./controllers/uploadController');`
+async function createFileUploadRoutes() {
+  let data = await fs.readFile("./router.js", "utf8");
+    const importContent = `const uploadController = require('./controllers/uploadController');\nconst upload = require('./middleware/multer');`;
     const routeContent = `
-    //File Upload
-    router.post('/upload-doc', AuthHelper.verifyToken, new TryCatch(uploadController.uploadDocument).tryCatchGlobe())
-    `
-    const importMarker = "//imports here"
-    const routeMarker = "//code here"
+    // Add Single file to Cloudinary
+    router.post("/uploadSingleFile", AuthHelper.verifyToken, upload.single("image"), new TryCatch(uploadController.uploadSingleFile).tryCatchGlobe());
 
-    await insertCode(importMarker, routeMarker, "./router.js", importContent, routeContent, data)
-    rl.close()
-    menu()
-  } catch (err) {
-    console.error(`❌ Error: ${err.message}`)
-  }
+    // Add Multiple files to cloudinary - {Array of Attachments}
+    router.post("/uploadMultipleFiles", AuthHelper.verifyToken, upload.array("attachments"), new TryCatch(uploadController.uploadMultipleFiles).tryCatchGlobe());
+
+    // Add files according to fields to cloudinary
+    // [
+    //   { name: 'avatar', maxCount: 1 },
+    //   { name: 'gallery', maxCount: 8 }
+    // ]
+    router.post("/uploadFiles",AuthHelper.verifyToken,upload.fields([{name: "userImage"},{name: "coverPhoto",}]),new TryCatch(uploadController.uploadFiles).tryCatchGlobe());
+
+    // Delete Single file from cloudinary
+    router.post("/deleteSingleFile", AuthHelper.verifyToken, new TryCatch(uploadController.deleteSingleFile).tryCatchGlobe());
+
+    // Delete Multiple files from cloudinary - {Array of Public Ids}
+    router.post("/deleteMultipleFiles", AuthHelper.verifyToken, new TryCatch(uploadController.deleteMultipleFiles).tryCatchGlobe());
+    `;
+    const importMarker = "//imports here";
+    const routeMarker = "//code here";
+
+    await insertCode(
+      importMarker,
+      routeMarker,
+      "./router.js",
+      importContent,
+      routeContent,
+      data
+    );
 }
 
-async function createFirebaseRoutes() {
-  let data = await fs.readFile("./router.js", "utf8")
+async function addFileUpload() {
+  console.log("📦 Installing Packages...");
 
-  const importContent = `const firebaseController = require("./controllers/firebaseController")`
+  await installDependency("multer cloudinary");
+  console.log("📦 Installation Complete...");
+
+  // After installing the packages, get their credentials
+  const CLOUD_NAME = await new Promise((resolve) => {
+    rl.question("👉 Enter the Cloudinary Cloud Name 💁‍♂️ : ", (answer) => {
+      resolve(answer);
+    });
+  });
+  const API_KEY = await new Promise((resolve) => {
+    rl.question("👉 Enter the Cloudinary API Key 💁‍♂️ : ", (answer) => {
+      resolve(answer);
+    });
+  });
+  const API_SECRET = await new Promise((resolve) => {
+    rl.question("👉 Enter the Cloudinary API Secret 💁‍♂️ : ", (answer) => {
+      resolve(answer);
+    });
+  });
+
+  await fs.appendFile(
+    ".env",
+    `\nCLOUDINARY_CLOUD_NAME=${CLOUD_NAME}\nCLOUDINARY_API_KEY=${API_KEY}\nCLOUDINARY_API_SECRET=${API_SECRET}`
+  );
+
+  // Adding upload routes
+  await createFileUploadRoutes();
+
+  // Adding the middleware and the helper file
+  await fs.appendFile(`./helper/cloudinary.js`, fileContent.cloudinaryHelperFileContent);
+
+  const middlewareDir = path.join(__dirname, "middleware");
+  await fs.mkdir(middlewareDir, { recursive: true });
+  await fs.appendFile(`./middleware/multer.js`, fileContent.uploadMiddlewareFileContent);
+
+  // Adding upload Controller
+  await fs.appendFile(
+    `./controllers/uploadController.js`,
+    fileContent.uploadControllerFile
+  );
+
+  // Add the public files
+  const publicDir = path.join(__dirname, "public");
+  await fs.mkdir(publicDir, { recursive: true });
+  const imagesDir = path.join(publicDir, "images");
+  await fs.mkdir(imagesDir, { recursive: true });
+
+
+  rl.close();
+  menu();
+}
+
+
+
+async function createFirebaseRoutes() {
+  let data = await fs.readFile("./router.js", "utf8");
+
+  const importContent = `const firebaseController = require("./controllers/firebaseController")`;
   const routeContent = `//Firebase Push Notification Routes - Start
 router.post("/firebase/sendNotificationToCustomDevice", AuthHelper.verifyToken,
     new TryCatch(firebaseController.sendNotificationToCustomDevice).tryCatchGlobe());
@@ -1190,174 +1595,214 @@ router.post("/firebase/sendBatchNotificationsMultipleFCMS", AuthHelper.verifyTok
 router.post("/firebase/sendNotificationsToMultipleTopics", AuthHelper.verifyToken,
     new TryCatch(firebaseController.sendNotificationsToMultipleTopics).tryCatchGlobe());
 //Firebase Push Notification Routes - End
-`
-  const importMarker = "//imports here"
-  const routeMarker = "//code here"
+`;
+  const importMarker = "//imports here";
+  const routeMarker = "//code here";
 
-  await insertCode(importMarker, routeMarker, "./router.js", importContent, routeContent, data)
+  await insertCode(
+    importMarker,
+    routeMarker,
+    "./router.js",
+    importContent,
+    routeContent,
+    data
+  );
 }
+
 async function addFirebaseFCM() {
-  console.log("📦 Installing Packages...")
+  console.log("📦 Installing Packages...");
 
-  await installDependency("firebase-admin google-auth-library googleapis")
-  console.log("📦 Installation Complete...")
+  await installDependency("firebase-admin google-auth-library googleapis");
+  console.log("📦 Installation Complete...");
 
-  const PROJECT_ID = await new Promise(resolve => {
-    rl.question("👉Enter the Project ID of firebase project 💁‍♂️ : ", answer => {
-      resolve(answer)
-    })
-  })
+  const PROJECT_ID = await new Promise((resolve) => {
+    rl.question(
+      "👉Enter the Project ID of firebase project 💁‍♂️ : ",
+      (answer) => {
+        resolve(answer);
+      }
+    );
+  });
   try {
     // Read the file content
 
-    let data = await fs.readFile("./app.js", "utf8")
+    let data = await fs.readFile("./app.js", "utf8");
 
-    const importContent = `var admin = require("firebase-admin");`
+    const importContent = `var admin = require("firebase-admin");`;
     const routeContent = `//firebase init\nprocess.env.GOOGLE_APPLICATION_CREDENTIALS;\nadmin.initializeApp({
   credential: admin.credential.applicationDefault(),
   projectId: "${PROJECT_ID}",
-});`
-    const importMarker = "//imports here"
-    const routeMarker = "//code here"
+});`;
+    const importMarker = "//imports here";
+    const routeMarker = "//code here";
 
-    await insertCode(importMarker, routeMarker, "./app.js", importContent, routeContent, data)
-    await createFirebaseRoutes()
-    rl.close()
-    menu()
+    await insertCode(
+      importMarker,
+      routeMarker,
+      "./app.js",
+      importContent,
+      routeContent,
+      data
+    );
+    await createFirebaseRoutes();
+    rl.close();
+    menu();
   } catch (err) {
-    console.error(`❌ Error: ${err.message}`)
+    console.error(`❌ Error: ${err.message}`);
   }
   await fs.appendFile(
     `./firebase-key.json`,
     `{
     "message": "PASTE YOUR copied contents here"
 } `
-  )
+  );
   console.log(`🔑 Added Firebase Private Key in Environment Variables. 
-    \n 1. Create a private key file. \n 2. To create, create a firebase project. \n 3. Go to 🛠️ settings -> ⛅ Cloud Messaging Tab. Enable it. \n 4. Go to service accounts tab -> generate 🔐 private key. \n 5. Copy content of that file as it as to 📂 "firebase-key.json"\n\n`)
-  await fs.appendFile(`.env`, '\nGOOGLE_APPLICATION_CREDENTIALS="firebase-key.json"')
-  await fs.appendFile(`./controllers/firebaseController.js`, fileContent.firebaseControllerFile)
-  rl.close()
-  menu()
+    \n 1. Create a private key file. \n 2. To create, create a firebase project. \n 3. Go to 🛠️ settings -> ⛅ Cloud Messaging Tab. Enable it. \n 4. Go to service accounts tab -> generate 🔐 private key. \n 5. Copy content of that file as it as to 📂 "firebase-key.json"\n\n`);
+  await fs.appendFile(
+    `.env`,
+    '\nGOOGLE_APPLICATION_CREDENTIALS="firebase-key.json"'
+  );
+  await fs.appendFile(
+    `./controllers/firebaseController.js`,
+    fileContent.firebaseControllerFile
+  );
+  rl.close();
+  menu();
 }
+
+
 
 async function addWhatsapp() {
-  console.log("📦 Installing Axios...")
-  await installDependency("axios")
-  console.log("📦 Axios Installation Complete...")
+  console.log("📦 Installing Axios...");
+  await installDependency("axios");
+  console.log("📦 Axios Installation Complete...");
 
-  await fs.appendFile(`./helper/WhatsappNotification.js`, fileContent.whatsappFileContent)
-  await fs.appendFile(`.env`, '\nWHATSAPP_URL="https://graph.facebook.com/v18.0/144528362069356/messages"\nWHATSAPP_ACCESS_TOKEN=')
+  await fs.appendFile(
+    `./helper/WhatsappNotification.js`,
+    fileContent.whatsappFileContent
+  );
+  await fs.appendFile(
+    `.env`,
+    '\nWHATSAPP_URL="https://graph.facebook.com/v18.0/144528362069356/messages"\nWHATSAPP_ACCESS_TOKEN='
+  );
 
-  console.log(`✅ Whatsapp Feature Added.\nMake Sure to add 🔐 access token in environment variables.\n`)
-  rl.close()
-  menu()
+  console.log(
+    `✅ Whatsapp Feature Added.\nMake Sure to add 🔐 access token in environment variables.\n`
+  );
+  rl.close();
+  menu();
 }
 async function addNodemailer() {
-  console.log("📦 Installing nodemailer...")
-  await installDependency("nodemailer")
-  console.log("📦 Nodemailer Installation Complete...")
-  await fs.appendFile(`./helper/Nodemailer.js`, fileContent.nodemailerFileContent)
-  await fs.appendFile(`.env`, '\nNODEMAILER_ADMIN_EMAIL="atharvalolzzz96@gmail.com"\nNODEMAILER_ADMIN_PASSWORD="cpknpwooqdjulvop"')
+  console.log("📦 Installing nodemailer...");
+  await installDependency("nodemailer");
+  console.log("📦 Nodemailer Installation Complete...");
+  await fs.appendFile(
+    `./helper/Nodemailer.js`,
+    fileContent.nodemailerFileContent
+  );
+  await fs.appendFile(
+    `.env`,
+    '\nNODEMAILER_ADMIN_EMAIL="atharvalolzzz96@gmail.com"\nNODEMAILER_ADMIN_PASSWORD="cpknpwooqdjulvop"'
+  );
 
-  console.log(`✅ Email Feature Added.\n`)
-  rl.close()
-  menu()
+  console.log(`✅ Email Feature Added.\n`);
+  rl.close();
+  menu();
 }
 function menu() {
-  console.log("==============MENU=============")
-  console.log("1. 📁 Initialize")
-  console.log("2. 🛠️ Create new ACTOR Model")
-  console.log("3. 📝 Create New Model")
-  console.log("4. 💬 Add Chat Interface")
-  console.log("5. 🔼 Add File Upload Feature")
-  console.log("6. 🔔 Firebase Push Notifications")
-  console.log("7. 🟢 Add Whatsapp Notifications")
-  console.log("8. 🗒️ Add Nodemailer")
-  console.log("9. ❌ Quit")
-  console.log("===============================\n")
+  console.log("==============MENU=============");
+  console.log("1. 📁 Initialize");
+  console.log("2. 🛠️ Create new ACTOR Model");
+  console.log("3. 📝 Create New Model");
+  console.log("4. 💬 Add Chat Interface");
+  console.log("5. 🔼 Add File Upload Feature");
+  console.log("6. 🔔 Firebase Push Notifications");
+  console.log("7. 🟢 Add Whatsapp Notifications");
+  console.log("8. 🗒️ Add Nodemailer");
+  console.log("9. ❌ Quit");
+  console.log("===============================\n");
 
-  ci()
+  ci();
 
-  rl.question("What would you like to work upon today?: ", async answer => {
-    console.log(`👉 You entered: ${answer}\n`)
+  rl.question("What would you like to work upon today?: ", async (answer) => {
+    console.log(`👉 You entered: ${answer}\n`);
 
     switch (answer) {
       case "1":
         try {
-          await initialize()
+          await initialize();
         } catch (err) {
-          console.error("❌ Error during initialization:", err.message)
+          console.error("❌ Error during initialization:", err.message);
         }
-        break
+        break;
 
       case "2":
         try {
-          await createActorModel()
+          await createActorModel();
         } catch (err) {
-          console.error("❌ Error creating actor model:", err.message)
+          console.error("❌ Error creating actor model:", err.message);
         }
-        break
+        break;
 
       case "3":
         try {
-          createModel()
+          createModel();
         } catch (err) {
-          console.error("❌ Error creating model:", err.message)
+          console.error("❌ Error creating model:", err.message);
         }
-        break
+        break;
 
       case "4":
         try {
-          await addChatInterface()
+          await addChatInterface();
         } catch (err) {
-          console.error("❌ Error creating model:", err.message)
+          console.error("❌ Error creating model:", err.message);
         }
-        break
+        break;
 
       case "5":
         try {
-          await addFileUpload()
+          await addFileUpload();
         } catch (err) {
-          console.error("❌ Error creating model:", err.message)
+          console.error("❌ Error creating model:", err.message);
         }
-        break
+        break;
       case "6":
         try {
-          await addFirebaseFCM()
+          await addFirebaseFCM();
         } catch (err) {
-          console.error("❌ Error adding firebase:", err.message)
+          console.error("❌ Error adding firebase:", err.message);
         }
-        break
+        break;
       case "7":
         try {
-          await addWhatsapp()
+          await addWhatsapp();
         } catch (err) {
-          console.error("❌ Error adding whatsapp:", err.message)
+          console.error("❌ Error adding whatsapp:", err.message);
         }
-        break
+        break;
       case "8":
         try {
-          await addNodemailer()
+          await addNodemailer();
         } catch (err) {
-          console.error("❌ Error adding nodemailer:", err.message)
+          console.error("❌ Error adding nodemailer:", err.message);
         }
-        break
+        break;
       case "9":
-        console.log("✨HAPPY CODING - Thank You For Using✨")
-        exit(0)
+        console.log("✨HAPPY CODING - Thank You For Using✨");
+        exit(0);
       default:
-        console.log("❌ Invalid Input. Please enter a valid option.\n")
-        rl.close()
-        menu()
-        break
+        console.log("❌ Invalid Input. Please enter a valid option.\n");
+        rl.close();
+        menu();
+        break;
     }
-  })
+  });
 }
 
-console.log("\n===============================")
-console.log("       🚀 Welcome to the        ")
-console.log("     💼 Project Manager CLI     ")
-console.log(" 🙋‍♂️ Dev: Kush Kapadia | Mit Shah    ")
-console.log("===============================\n")
-menu()
+console.log("\n===============================");
+console.log("       🚀 Welcome to the        ");
+console.log("     💼 Project Manager CLI     ");
+console.log(" 🙋‍♂️ Dev: Kush Kapadia | Mit Shah    ");
+console.log("===============================\n");
+menu();
