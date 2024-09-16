@@ -1,6 +1,6 @@
 # Node.js MVC Generator 
 
-This project is an industry-standard Node.js MVC generator that automates the creation of MVC structure in a Node.js project. 
+This Menu-Driven project is an industry-standard Node.js MVC generator that automates the creation of MVC structure in a Node.js project. 
 🖥️ Developed by Kush Kapadia, Mit Shah and Atharva Jadhav.
 
 ## Features
@@ -10,13 +10,20 @@ This project is an industry-standard Node.js MVC generator that automates the cr
 - Follows best practices for scalability and maintainability and error-handling.
 - Pre-configured basic authentication APi's
 - Pre-configured basic CRUD API's for any created entity.
-- Option to add file upload file, whatsbot integration, firebase FCM integration API's in one click.
-  
+- JWT based authentication for any actor entity.
+- Option to add file upload file on Cloudinary
+- WhatsApp Notifications integration
+- Firebase FCM integration API's in one click.
+- NodeMailer Integration in a single click.
+- Chat logic with database model and API's creation.
+- Local LLM Integration using langchain and Ollama.
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) installed
 - Basic understanding of MVC architecture and Node.js
-
+- Ollama installed: (https://ollama.com/) (Optional)
+  
 ## Installation
 
 1. **Clone the repository:**
@@ -24,6 +31,7 @@ This project is an industry-standard Node.js MVC generator that automates the cr
     ```bash
     git clone https://github.com/kushkapadia/MVCGenerator/
     ```
+- After cloning, copy the cloned file to your actual project directory.
 
 2. **Navigate to the project directory:**
 
@@ -37,7 +45,11 @@ This project is an industry-standard Node.js MVC generator that automates the cr
     node MVCBuilder.js
     ```
 
+4. **Fixes Needed in the Generator**
+   - Update Logic not implemented.
+   - Ask nodemailer credentials from the CLI itself. (Right now it is hardcoded)
+
 ## Usage
 
-Once executed, the generator will create an MVC structure in your project directory.
+Once executed, the generator will create an MVC structure in your project directory, automatically installing the required npm packages.
 
