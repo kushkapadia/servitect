@@ -1,7 +1,7 @@
 # Node.js MVC Generator 
 
 This project is an industry-standard Node.js MVC generator that automates the creation of MVC structure in a Node.js project. 
-🖥️ Developed by Mit Shah, Kush Kapadia, and Atharva Jadhav.
+🖥️ Developed by Kush Kapadia, Mit Shah and Atharva Jadhav.
 
 ## Features
 
