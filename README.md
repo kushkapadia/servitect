@@ -7,7 +7,10 @@ This project is an industry-standard Node.js MVC generator that automates the cr
 
 - Automatically generates the folder structure for Model-View-Controller (MVC) pattern.
 - Pre-configured files for routes, controllers, and models.
-- Follows best practices for scalability and maintainability.
+- Follows best practices for scalability and maintainability and error-handling.
+- Pre-configured basic authentication APi's
+- Pre-configured basic CRUD API's for any created entity.
+- Option to add file upload file, whatsbot integration, firebase FCM integration API's in one click.
   
 ## Prerequisites
 
