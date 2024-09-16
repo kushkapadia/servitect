@@ -15,7 +15,7 @@ This project is an industry-standard Node.js MVC generator that automates the cr
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) installed
-- Basic understanding of MVC architecture
+- Basic understanding of MVC architecture and Node.js
 
 ## Installation
 
