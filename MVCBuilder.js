@@ -26,7 +26,12 @@ let ModelFileContent = "";
 //Initial Initializing
 async function initialize() {
   try {
-     projectDirPath = path.join(__dirname, "test");
+    let projectDirName = await new Promise((resolve) => {
+      rl.question("👉Enter the Project name [Default-project] 💁‍♂️ : ", (answer) => {
+        resolve(answer);
+      });
+    });
+     projectDirPath = path.join(__dirname, projectDirName==null || projectDirName=='' ? "project" : projectDirName);
     await fs.mkdir(projectDirPath, { recursive: true });
     console.log("✅ Project folder created successfully.");
     mvcInitializers.initPackageFile(projectDirPath);
@@ -44,7 +49,7 @@ async function initialize() {
     // rl.close();
     menu();
   } catch (err) {
-    console.error("❌ Error during initialization2:", err);
+    console.error("❌ Error during initialization2:", err.message);
   }
 }
 
