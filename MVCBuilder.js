@@ -1,10 +1,17 @@
 const path = require("path");
 const readline = require("readline");
 const { exec } = require("child_process");
-let rl;
+
+const dependencyUtil= require("./dependencies")
+const mvcFileContent = require("./fileContents")
+let projectDirPath;
 // const fs = require('fs');
 const fs = require("fs/promises");
 const { exit } = require("process");
+const mvcInitializers = require("./mvcInitializers");
+const dependencyInstaller = require("./dependencyInstaller");
+const codeInserter = require("./codeInserter")
+let { initializeReadline, rl} = require("./readlineInterface.js")
 let content = "";
 let attributes = "";
 let nonActorAttributes = "";
@@ -12,1245 +19,32 @@ let actorModelFileContent = "";
 let ModelFileContent = "";
 
 //funct to start readline interface.
-function ci() {
-  rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-}
-const dependencyList =
-  "bcryptjs express jsonwebtoken connect-mongo dotenv morgan nodemon express-async-handler cors http-status-codes";
 
-// all file contents
-const fileContent = {
-  nodemailerFileContent: `const nodemailer = require("nodemailer")
-require("dotenv").config()
-class Nodemailer{
-    recieverEmail
-    subject
-    content
 
-    constructor(recieverEmail,subject, content){
-        this.recieverEmail = recieverEmail
-        this.subject = subject
-        this.content = content
-    }
 
-    sendMail(){
 
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.NODEMAILER_ADMIN_EMAIL,
-                pass: process.env.NODEMAILER_ADMIN_PASSWORD
-            }
-        });
-
-        let details = {
-            from: process.env.NODEMAILER_ADMIN_EMAIL,
-            to: this.recieverEmail,
-            subject: this.subject,
-            html: this.content
-        }
-
-
-        transporter.sendMail(details, (err) => {
-            if (err) {
-                return err;
-            } else {
-                return 'Sent Mail Successfully';
-            }
-        })
-    }
-}
-module.exports = Nodemailer
-`,
-  whatsappFileContent: `import axios from "axios"
-require("dotenv").config()
-class WhatsappNotification {
-    numberToSend;
-    msgBody
-
-    constructor(numberToSend, msgBody) {
-        this.numberToSend = numberToSend
-        this.msgBody = msgBody
-    }
-
-    sendWhatsappNotification() {
-        const url = process.env.WHATSAPP_URL;
-        const accessToken = process.env.WHATSAPP_ACCESS_TOKEN; 
-
-        const data = {
-            messaging_product: 'whatsapp',
-            to: this.numberToSend,
-            type: 'text',
-            text: {
-                body: this.msgBody
-            },
-        };
-
-        const headers = {
-            Authorization: "Bearer " + accessToken,
-            'Content-Type': 'application/json',
-        };
-
-        axios.post(url, data, { headers })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                return error.response.data;
-            });
-    }
-}
-module.exports = WhatsappNotification
-`,
-  dbFileContent: `const {MongoClient} = require('mongodb')
-
-const dotenv = require('dotenv')
-dotenv.config()
-
-    const client = new MongoClient(process.env.CONNECTION_STRING)
-    
-    async function start(){
-      await client.connect()
-     
-      console.log("Connected")
-      module.exports = client
-      const app = require('./app')
-      app.listen(process.env.PORT)
-    }
-      start()`,
-  appFileContent: `const express = require("express");
-const router = require("./router");
-const morgan = require("morgan");
-
-const cors = require("cors");
-
-
-//imports here
-
-
-//code here
-
-// Initialize our server
-const app = express();
-//To access the data user inputs in form.
-app.use(express.urlencoded({ extended: false }));
-//just a bolierplate code, tells our express server to add the user submitted data to request object.
-app.use(express.json());
-
-app.use(express.static("public"));
-app.use(morgan("dev"));
-app.use("/", router);
-
-app.use(cors());
-
-
-
-module.exports = app;
-`,
-  envFileContent: (PORT, CONNECTION_STRING) =>
-    `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
-  gitIgnoreFileContent: `/node_modules\n.env`,
-  packageJsonFileContent: `{
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "server": "nodemon db.js",
-    "watch": "start nodemon db.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    
-  }
-}
-`,
-  messageFileContent: `
-        let Messages = function () {
-
-        };
-        
-        //Login Messages
-        Messages.prototype.INVAID_AUTHORIZATION =
-          "This authorization code validate unsuccessfull.";
-        Messages.prototype.VALIDATE_AUTHORIZATION =
-          "This authorization code validate successfully.";
-        Messages.prototype.INVALID_CREDENTIALS = "Invalid credentials.";
-        Messages.prototype.UNAUTHORIZED = "Unauthorized to access";
-        Messages.prototype.UNAUTHORIZED_SESSION_EXPIRED =
-          "Unauthorized to access, session expired";
-        
-        //CRUD Messages
-        Messages.prototype.CREATE_FAILED = "Failed to Create New Entry";
-        Messages.prototype.SUCCESSFULLY_DELETED = "Data successfully deleted";
-        Messages.prototype.SUCCESSFULLY_RECORD_DELETED = "Data successfully deleted";
-        
-          //JWT Messages
-          Messages.prototype.TOKEN_ERROR = "Token not generated.";
-          Messages.prototype.TOKEN_SUCCESS = "Token generated successfully.";
-          Messages.prototype.INVALID_SECRET = "Invalid secret.";
-        
-          //DATA Messages
-          Messages.prototype.SUCCESSFULLY_RECEIVED = 'Successfully received.';
-
-          // Cloudinary Messages
-          Messages.prototype.FILE_NOT_FOUND = "File not found.";
-
-          Messages.prototype.SUCCESSFULLY_SAVED_TO_CLOUDINARY =
-            "Successfully saved to cloudinary.";
-          Messages.prototype.FAILED_TO_SAVE_TO_CLOUDINARY =
-            "Failed to save to cloudinary.";
-          Messages.prototype.UPLOAD_SUCCESS = "File uploaded successfully.";
-          Messages.prototype.SUCCESSFULLY_FILE_DELETED = "Successfully file deleted.";
-          Messages.prototype.FAILED_TO_DELETE_FROM_CLOUDINARY =
-            "Failed to delete from cloudinary.";
-        module.exports = Messages;
-        
-        `,
-  JsonResponseFileContent: `
-        
-const HttpStatus = require("http-status-codes");
-
-let JsonResponse  = function(req, res, method_name){
-this.req = req,
-this.res = res,
-this.method_name =method_name;
-}
-
-
-JsonResponse.prototype.jsonSuccess = function(data, message) {
-      const obj = {
-      success: true,
-      data: data,
-      message: message,
-    };
-    this.res.status(HttpStatus.OK).send(obj);
-  }
-
-  JsonResponse.prototype.jsonError = function() {
-    
-    const obj = {
-      success: false,
-      data: this.res.locals.data,
-      message:
-      this.res.locals.message.toString() || "Something went wrong, please contact to admin.",
-    };
-    if (!this.res.locals.status_code) {
-      this.res.status(HttpStatus.BAD_REQUEST);
-    } else {
-      this.res.status(this.res.locals.status_code);
-    }
-    this.res.send(obj);
-  }
-
-  module.exports = JsonResponse
-        `,
-  JWTAuthHelperFileContent: `        
-const jwt = require("jsonwebtoken");
-const JsonResponse = require('./JsonResponse');
-
-exports.verifyToken = function (req, res, next) {
-  try{
-    const bearerToken = req.headers["authorization"];
-
-    const bearer = bearerToken.split(" ");
-
-    const token = bearer[1];
-
-    console.log(token);
-
-    req.apiUser = jwt.verify(token, process.env.JWTSECRET);
-    console.log(req.apiUser)  
-    next()
-  } catch(error){
-console.log("here")
-    res.locals.data = {
-        isVaild: false, 
-        authorizationFailed: true,
-      };
-
-      res.locals.message = error;
-      new JsonResponse(req, res).jsonError();
-      // next(error)
-      // return true
-  }
-};
-        `,
-  tryCatchFileContent: `
-const JsonResponse = require('./JsonResponse')
-
-let  TryCatch = function(handler){
-this.handler = handler
-}
-    /**
-     * tryCatchGlobe
-     */
-    TryCatch.prototype.tryCatchGlobe = function()  {
-        return async (req, res, next) => {
-            try {
-             await this.handler(req,res);   
-            } catch (error) {
-                res.locals.data = {
-                    isVaild:false
-                };
-                res.locals.message = error;
-                // console.log(error);
-            //   new JsonResponse.jsonError(req, res);
-            new JsonResponse(req, res).jsonError();
-
-                next(error);
-            }
-        }
-    }
-
-    module.exports = TryCatch
-`,
-  routerFileContent: `
-const express = require('express');
-const router = express.Router();
-const AuthHelper = require('./helper/JWTAuthHelper');
-const TryCatch = require('./helper/TryCatch');
-const Messages = require('./constants/Messages');
-
-//imports here
-
-//code here
-module.exports = router;
-`,
-  firebaseControllerFile: `
-const admin = require("firebase-admin");
-const { firebase } = require("googleapis/build/src/apis/firebase");
-const JsonResponse = require("../helper/JsonResponse");
-const Messages = require("../constants/Messages");
-
-
-exports.sendNotificationToCustomDevice = async (req, res) => {
-  const token = req.body.fcmToken;
-
-  const message = {
-    notification: {
-      title: req.body.title,
-      body: req.body.desc,
-    },
-    data: {
-      url: req.body.url,
-    },
-    token: token,
-  };
-
-  admin
-    .messaging()
-    .send(message)
-    .then((response) => {
-      // console.log("Successfully sent message:", response);
-      new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-    })
-    .catch((error) => {
-      // console.log("Error sending message:");
-      new JsonResponse(req, res).jsonError(error, new Messages().PUSH_NOTIFICATION_FAILED)
-    });
-};
-
-exports.sendNotificationToTopic = async (req, res) => {
-  const topic = req.params.topic;
-
-  console.log("Topic:");
-  console.log(topic);
-
-  const message = {
-    notification: {
-      title: req.body.title,
-      body: req.body.desc,
-    },
-    data: {
-      url: req.body.url,
-    },
-    topic: topic,
-  };
-
-  admin
-    .messaging()
-    .send(message)
-    .then((response) => {
-      // console.log("Successfully sent message:", response);
-      new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-    })
-    .catch((error) => {
-      // console.log("Error sending message:");
-      new JsonResponse(req, res).jsonError(error, new Messages().PUSH_NOTIFICATION_FAILED)
-    });
-};
-
-exports.sendBatchNotificationsMultipleFCMS = async (req, res) => {
-  try {
-    const tokens = req.body.fcmTokens;
-
-    const message = {
-      notification: {
-        title: req.body.title,
-        body: req.body.desc,
-      },
-      tokens: tokens,
-      data: {
-        url: req.body.url,
-      },
-    };
-
-    admin
-      .messaging()
-      .sendEachForMulticast(message)
-      .then((response) => {
-        // if (response.failureCount > 0) {
-        //   const failedTokens = [];
-        //   response.responses.forEach((resp, idx) => {
-        //     if (!resp.success) {
-        //       failedTokens.push(tokens[idx]);
-        //     }
-        //   });
-        //   console.log("List of tokens that caused failures: " + failedTokens);
-        //   new JsonResponse(req, res).jsonSuccess(response.failureCount, new Messages().PUSH_NOTIFICATION_SENT)
-
-        // } else {
-          new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-        // }
-      });
-  } catch (err) {
-    console.log(err);
-    // res.status(500).json({ message: "Error sending push notification" });
-    new JsonResponse(req, res).jsonSuccess(err, new Messages().PUSH_NOTIFICATION_FAILED)
-
-  }
-};
-exports.sendNotificationsToMultipleTopics = async (req, res) => {
-      const topics = req.body.topics;
-
-      if (!Array.isArray(topics) || topics.length === 0) {
-        return res
-          .status(400)
-          .send({ error: "Topics should be a non-empty array" });
-      }
-
-      // Helper function to chunk an array into smaller arrays of a specific size
-      const chunkArray = (array, size) => {
-        const result = [];
-        for (let i = 0; i < array.length; i += size) {
-          result.push(array.slice(i, i + size));
-        }
-        return result;
-      };
-
-      const topicChunks = chunkArray(topics, 5);
-
-      const notificationPromises = topicChunks.map(async (chunk) => {
-        const condition = chunk
-          .map((topic) => \`'\${topic.replace(/'/g, "\\'").replace(/ /g, "_")}' in topics\`)
-  .join(" || ");
-console.log("Condition:", condition);
-
-const message = {
-  notification: {
-    title: req.body.title,
-    body: req.body.desc,
-  },
-  data: {
-    url: req.body.url,
-  },
-  condition: condition,
-};
-
-const results = await Promise.all(notificationPromises);
-try {
-  const response = await admin.messaging().send(message);
-  console.log("Successfully sent message:", response);
-  // return { status: "success", response };
-  new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-} catch (error) {
-  console.log("Error sending message:", error);
-  // return { status: "error", error };
-  new JsonResponse(req, res).jsonError(error, new Messages().PUSH_NOTIFICATION_FAILED)
-
-}
-  });
-
-
-  // const failedNotifications = results.filter(
-  //   (result) => result.status === "error"
-  // );
-
-  // if (failedNotifications.length > 0) {
-  //   new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-
-  // }
-
-  // new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-
-}
-`,
-  uploadControllerFile: `
-const Messages = require("../constants/Messages");
-const JsonResponse = require("../helper/JsonResponse");
-const jwt = require("jsonwebtoken");
-const {
-  uploadSingleFileOnCloudinary,
-  uploadMultipleFilesOnCloudinary,
-  deleteSingleFileFromCloudinary,
-  deleteMultipleFilesFromCloudinary,
-} = require("../helper/cloudinary");
-
-// Upload Files
-
-exports.uploadSingleFile = async function (req, res) {
-  console.log("Request File");
-
-  // If you are sending only one file only use req.file
-  console.log(req.file);
-
-  // Get the Local Path from the server which will be stored by multer defined in the middleware
-  const image = req.file?.path;
-
-  console.log("LocalPath: ", image);
-
-  // Use the local Path to upload the file to Cloudinary
-  const result = await uploadSingleFileOnCloudinary(image);
-
-  console.log("Result" + result);
-
-  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
-  if (result == null) {
-    new JsonResponse(req, res).jsonSuccess(
-      null,
-      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
-    );
-    return;
-  }
-
-  console.log("Cloudinary Result: ", result);
-
-  new JsonResponse(req, res).jsonSuccess(
-    result.url,
-    new Messages().SUCCESSFULLY_RECEIVED
-  );
-};
-
-exports.uploadMultipleFiles = async function (req, res) {
-  // Get the Local Path from the server which will be stored by multer defined in the middleware
-  const attachments = req.files;
-
-  // If there are no attachments
-  if (attachments.length == 0) {
-    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
-    return;
-  }
-
-  // Use the local Path to upload the file to Cloudinary
-  const result = await uploadMultipleFilesOnCloudinary(attachments);
-
-  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
-  if (result == null) {
-    new JsonResponse(req, res).jsonSuccess(
-      null,
-      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
-    );
-    return;
-  }
-
-  console.log("Cloudinary Result: ", result);
-
-  new JsonResponse(req, res).jsonSuccess(
-    result,
-    new Messages().SUCCESSFULLY_RECEIVED
-  );
-};
-
-exports.uploadFiles = async function (req, res) {
-  // Get the Local Path from the server which will be stored by multer defined in the middleware
-  const userImagePath = req.files?.userImage[0].path;
-  const coverPhotoPath = req.files?.coverPhoto[0].path;
-
-  // If there are no images
-  if (userImagePath == null || coverPhotoPath == null) {
-    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
-    return;
-  }
-
-  // Use the local Path to upload the file to Cloudinary
-  const userImageURL = await uploadSingleFileOnCloudinary(userImagePath);
-  const coverPhotoURL = await uploadSingleFileOnCloudinary(coverPhotoPath);
-
-  // Make sure if the file has been uploaded to Cloudinary, store the cloudinary URL in the database
-  if (!userImageURL || !coverPhotoURL) {
-    new JsonResponse(req, res).jsonSuccess(
-      null,
-      new Messages().FAILED_TO_SAVE_TO_CLOUDINARY
-    );
-    return;
-  }
-
-  console.log("Cloudinary Result: ", userImageURL, coverPhotoURL);
-
-  new JsonResponse(req, res).jsonSuccess(
-    {
-      userImageURL: userImageURL.url,
-      coverPhotoURL: coverPhotoURL.url,
-    },
-    new Messages().SUCCESSFULLY_RECEIVED
-  );
-};
-
-// Delete Files
-
-exports.deleteSingleFile = async function (req, res) {
-  const publicId = req.body.publicId;
-
-  // Delete the file from Cloudinary
-  const result = await deleteSingleFileFromCloudinary(publicId);
-
-  // Make sure if the file has been deleted from Cloudinary
-  if (!result) {
-    new JsonResponse(req, res).jsonSuccess(
-      null,
-      new Messages().FAILED_TO_DELETE_FROM_CLOUDINARY
-    );
-    return;
-  }
-
-  new JsonResponse(req, res).jsonSuccess(
-    null,
-    new Messages().SUCCESSFULLY_FILE_DELETED
-  );
-};
-
-exports.deleteMultipleFiles = async function (req, res) {
-  const publicIds = req.body.publicIds;
-
-  // Delete the file from Cloudinary
-  const result = await deleteMultipleFilesFromCloudinary(publicIds);
-
-  // Make sure if the file has been deleted from Cloudinary
-  if (!result) {
-    new JsonResponse(req, res).jsonSuccess(
-      null,
-      new Messages().FAILED_TO_DELETE_FROM_CLOUDINARY
-    );
-    return;
-  }
-
-  new JsonResponse(req, res).jsonSuccess(
-    null,
-    new Messages().SUCCESSFULLY_FILE_DELETED
-  );
-};
-
-    `,
-  cloudinaryHelperFileContent: ` 
-const cloudinary = require("cloudinary").v2;
-const fs = require("fs");
-const Messages = require("../constants/Messages");
-const JsonResponse = require("../helper/JsonResponse");
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const uploadSingleFileOnCloudinary = async (localFilePath) => {
-  if (!localFilePath) {
-    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
-    return;
-  }
-
-  const result = await cloudinary.uploader.upload(localFilePath, {
-    resource_type: "auto",
-  });
-  fs.unlinkSync(localFilePath);
-
-  console.log("Result" + result.url);
-
-  return result;
-};
-
-const uploadMultipleFilesOnCloudinary = async (attachments) => {
-  const urls = await Promise.all(
-    attachments.map(async (attachment) => {
-      const result = await cloudinary.uploader.upload(attachment.path, {
-        resource_type: "auto",
-      });
-      return result.url;
-    })
-  );
-
-  attachments.map((attachment) => {
-    fs.unlinkSync(attachment.path);
-  });
-
-  console.log("Result" + urls);
-
-  return urls;
-};
-
-const deleteSingleFileFromCloudinary = async (publicId) => {
-  if (!publicId) {
-    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
-    return;
-  }
-
-  const result = await cloudinary.uploader.destroy(publicId);
-  console.log("Result" + result);
-
-  return result;
-};
-
-const deleteMultipleFilesFromCloudinary = async (publicIds) => {
-  if (!publicIds) {
-    new JsonResponse(req, res).jsonSuccess(null, new Messages().FILE_NOT_FOUND);
-    return;
-  }
-
-  const result = await cloudinary.api.delete_resources(publicIds);
-  console.log("Result" + result);
-
-  return result;
-};
-
-module.exports = {
-  uploadSingleFileOnCloudinary,
-  uploadMultipleFilesOnCloudinary,
-  deleteSingleFileFromCloudinary,
-  deleteMultipleFilesFromCloudinary,
-};
-  `,
-  uploadMiddlewareFileContent: `
-const multer = require("multer");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/images/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = new Date().getTime().toString();
-    console.log(req + " " + file);
-
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
-
-module.exports = upload;
-  `
-  , 
-
-  nonActorControllerFileContent: (modelname) => ` 
-const Messages = require("../constants/Messages");
-  const JsonResponse = require("../helper/JsonResponse");
-  const TryCatch = require("../helper/TryCatch");
-  const ${modelname} = require("../models/${modelname}");
-const jwt = require("jsonwebtoken");
-
-exports.create${modelname} = async function(req, res){
-  let ${modelname.toLowerCase()} = new ${modelname}(req.body)
- let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.create${modelname}();
- new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, "Created")
-}
-
-exports.getById = async function (req, res) {
-  let ${modelname.toLowerCase()} = new ${modelname} ()
-let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.getById(req.params.id)
-new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_RECEIVED)
-
-}
-
-
-exports.getAll${modelname}s = async function (req, res) {
-  let ${modelname.toLowerCase()} = new ${modelname} ()
-let ${modelname.toLowerCase()}s = await ${modelname.toLowerCase()}.getAll${modelname}s()
-new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}s, new Messages().SUCCESSFULLY_RECEIVED)
-return ${modelname.toLowerCase()}s
-}
-
-exports.deleteById = async function (req, res) {
-  let ${modelname.toLowerCase()} = new ${modelname} ();
-await ${modelname.toLowerCase()}.deleteById()
-new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
-}
-    `,
-  actorControllerFileContent: (modelname) => ` 
-    const Messages = require("../constants/Messages");
-const JsonResponse = require("../helper/JsonResponse");
-const TryCatch = require("../helper/TryCatch");
-const ${modelname} = require("../models/${modelname}");
-const jwt = require("jsonwebtoken");
-
-
-// how long a token lasts before expiring
-const tokenLasts = "365d";
-
-
-//LOGIN
-exports.apiLogin = async function (req, res) {
-  let ${modelname.toLowerCase()} = new ${modelname}(req.body);
-
-  let result = await ${modelname.toLowerCase()}.login();
-  if (result) {
-    let data = {
-      token: jwt.sign(
-        { _id: ${modelname.toLowerCase()}.data._id, name: ${modelname.toLowerCase()}.data.name, email: ${modelname.toLowerCase()}.data.email },
-        process.env.JWTSECRET,
-        { expiresIn: tokenLasts }
-      ),
-      id: ${modelname.toLowerCase()}.data._id,
-      name: ${modelname.toLowerCase()}.data.name,
-      role: "${modelname.toLowerCase()}",
-    };
-
-    new JsonResponse(req, res).jsonSuccess(data, "Login success");
-  } else {
-    res.locals.data = {
-      isValid: false,
-      loginFailed: true,
-    };
-    res.locals.message = new Messages().INVALID_CREDENTIALS;
-    new JsonResponse(req, res).jsonError();
-  }
-};
-
-//REGISTER
-exports.apiRegister = async function (req, res) {
-  let ${modelname.toLowerCase()} = new ${modelname}(req.body);
-  console.log(req.body);
-
-  let result = await ${modelname.toLowerCase()}.register();
-  if (result) {
-    let data = {
-      token: jwt.sign(
-        { _id: ${modelname.toLowerCase()}.data._id, name: ${modelname.toLowerCase()}.data.fName, email: ${modelname.toLowerCase()}.data.email },
-        process.env.JWTSECRET,
-        { expiresIn: tokenLasts }
-      ),
-      id: ${modelname.toLowerCase()}.data._id,
-      name: ${modelname.toLowerCase()}.data.name,
-      role: "${modelname.toLowerCase()}",
-    };
-    new JsonResponse(req, res).jsonSuccess(data, "Register success");
-  } else {
-    res.locals.data = {
-      isVaild: false,
-      authorizationFailed: true,
-    };
-    res.locals.message = regErrors;
-    new JsonResponse(req, res).jsonError();
-  }
-};
-
-//${modelname} Exists?
-exports.doesEmailExist = async function (req, res) {
-  // throw new Error("This is a dummy exception for testing");
-  console.log(${modelname}.doesEmailExist(req.body.email));
-  let emailBool = await ${modelname}.doesEmailExist(req.body.email);
-  new JsonResponse(req, res).jsonSuccess(
-    emailBool,
-    new Messages().SUCCESSFULLY_RECEIVED
-  );
-};
-
-
-
-exports.getById = async function(req, res){
-  let ${modelname.toLowerCase()} = new ${modelname}()
-  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.getById(req.params.id)
-  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_RECEIVED)
-
-}
-
-exports.getByEmail = async function(req, res){
-  let ${modelname.toLowerCase()} = new ${modelname}()
-  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.findByEmail(req.params.email)
-  console.log(${modelname.toLowerCase()}Doc)
-  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_RECEIVED)
-}
-
-exports.getAll${modelname}s = async function(req, res){
-  let ${modelname.toLowerCase()} = new ${modelname}()
-  let ${modelname.toLowerCase()}s = await ${modelname.toLowerCase()}.getAll${modelname}s()
-  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}s, new Messages().SUCCESSFULLY_RECEIVED)
-  return ${modelname.toLowerCase()}s
-}
-
-exports.deleteById= async function(req, res){
- let ${modelname.toLowerCase()} = new ${modelname}();
- await ${modelname.toLowerCase()}.deleteById()
- new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
-}
-    `,
-  nonActorModelFileContent: (modelName, nonActorAttributes) => `
-                const bcrypt = require("bcryptjs");
-                const Messages = require("../constants/Messages");
-                const TryCatch = require("../helper/TryCatch");
-                const { ObjectId } = require('mongodb');
-                const ${modelName.toLowerCase()}sCollection = require("../db").db().collection("${modelName.toLowerCase()}");
-                
-                let ${modelName} = function (data) {
-                  this.data = data;
-                  this.errors = [];
-                };
-                
-                ${modelName}.prototype.cleanUp = function () {
-                  // get rid of any bogus properties
-                  this.data = {
-                      
-                ${nonActorAttributes}
-                //predfined start
-                    createdAt: new Date(),
-                //predefined end
-                  };
-                };
-
-                ${modelName}.prototype.create${modelName} = async function(){
-                  this.cleanUp()
-                 const ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.insertOne(this.data);
-                  return ${modelName.toLowerCase()}Doc
-                }
-                              
-                ${modelName}.prototype.getById = async function (id){
-                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({_id: new ObjectId(id)})
-                  return ${modelName.toLowerCase()}Doc
-                }
-                
-                ${modelName}.prototype.getAll${modelName}s = async function (){
-                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.find({}).toArray()
-                  return ${modelName.toLowerCase()}Doc
-                }
-                
-                ${modelName}.prototype.deleteById = async function (id){
-                 await ${modelName.toLowerCase()}sCollection.deleteOne({_id: new ObjectId(id)})
-                  return 
-                }
-                
-                module.exports = ${modelName};             
-            `,
-  actorModelFileContent: (modelName) => `
-                const bcrypt = require("bcryptjs");
-                const Messages = require("../constants/Messages");
-                const TryCatch = require("../helper/TryCatch");
-                const { ObjectId } = require('mongodb');
-                const ${modelName.toLowerCase()}sCollection = require("../db").db().collection("${modelName.toLowerCase()}");
-                
-                let ${modelName} = function (data) {
-                  this.data = data;
-                  this.errors = [];
-                };
-                
-                ${modelName}.prototype.cleanUp = function () {
-                  // get rid of any bogus properties
-                  this.data = {
-                    //predfined start
-                    name: this.data.name,
-                    lName: this.data.lName,
-                    email: this.data.email.trim().toLowerCase(),
-                    password: this.data.password,
-                    contactNumber: this.data.contactNumber,
-                    address: this.data.address,
-                    city: this.data.city,
-                    role: "${modelName.toLowerCase()}",
-                    createdAt: new Date(),
-                //predefined end
-                ${attributes}
-                  };
-                };
-                
-                ${modelName}.prototype.login = async function () {
-                  let attemptedUser = await ${modelName.toLowerCase()}sCollection.findOne({ email: this.data.email });
-                  this.cleanUp();
-                  if (
-                    attemptedUser &&
-                    bcrypt.compareSync(this.data.password, attemptedUser.password)
-                  ) {
-                    this.data = attemptedUser;
-                    return true;
-                  } else {
-                    return false;
-                  }
-                };
-                
-                ${modelName}.prototype.register =async function  () {
-                    this.cleanUp();
-                 
-                      let salt = bcrypt.genSaltSync(10);
-                      this.data.password = bcrypt.hashSync(this.data.password, salt);
-                      await ${modelName.toLowerCase()}sCollection.insertOne(this.data);
-                      return true
-                    
-                };
-                
-                ${modelName}.prototype.findByEmail = async function (email) {
-                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({ email: email })
-                  return ${modelName.toLowerCase()}Doc
-                     
-                };
-                
-                ${modelName}.prototype.doesEmailExist = async function (email) {
-                 
-                    let ${modelName.toLowerCase()} = await ${modelName.toLowerCase()}sCollection.findOne({ email: email });
-                    if (${modelName.toLowerCase()}) {
-                      return true;
-                    } else {
-                      return false;
-                    }
-                  }
-                
-                ${modelName}.prototype.getById = async function (id){
-                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({_id: new ObjectId(id)})
-                  return ${modelName.toLowerCase()}Doc
-                }
-                
-                ${modelName}.prototype.getAll${modelName}s = async function (){
-                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.find({}).toArray()
-                  return ${modelName.toLowerCase()}Doc
-                }
-                
-                ${modelName}.prototype.deleteById = async function (id){
-                 await ${modelName.toLowerCase()}sCollection.deleteOne({_id: new ObjectId(id)})
-                  return 
-                }
-                
-                module.exports = ${modelName};             
-            `,
-
-  chatModelFileContent: `
-    const chatsCollection = require('../db').db().collection("chats");
-
-    const { ObjectId } = require('mongodb');
-    // const validator = require("validator")
-    // const md5 = require('md5')
-    let Chat = function(data){
-    this.data = data
-    this.errors =[]
-    }
-    
-    Chat.prototype.cleanUp = async function () {
-        // Clean up the data as before
-        this.data = {
-            senderName: this.data.senderName,
-            messageContent: this.data.messageContent,
-            image: this.data.image,
-            receiverId: new ObjectId(this.data.receiverId),
-            senderId: new ObjectId(this.data.senderId),
-            sentTime: new Date(),
-        };
-    }
-    
-     Chat.prototype.sendChat = async function(){
-        this.cleanUp()
-        try {
-            await chatsCollection.insertOne(this.data);
-        } catch (error) {
-            console.error("Error storing message in the database:", error);
-        }
-    };
-    
-    Chat.prototype.getChatConvo = async function(requesterId, chatContactId) {
-        try {
-            let chats = await chatsCollection.find({
-              $or: [
-                    { senderId: new ObjectId(requesterId), receiverId:  new ObjectId(chatContactId) },
-                    { senderId:  new ObjectId(chatContactId), receiverId:  new ObjectId(requesterId) }
-                ]
-            }).toArray();
-            return chats;
-        } catch (error) {
-            console.error("Error retrieving chat conversation:", error);
-        }
-    };
-          
-    module.exports = Chat
-    `,
-  chatControllerFileContent: `
-   
-    const Messages = require("../constants/Messages");
-const JsonResponse = require("../helper/JsonResponse");
-const Chat = require("../models/Chat");
-
-exports.sendChat = async function(req, res){
-    let chat = new Chat(req.body);
-    await chat.sendChat();
-    new JsonResponse(req, res).jsonSuccess("sent", new Messages().SUCCESSFULLY_RECEIVED)
-}
-
-exports.getChatConvo = async function(req, res){
-    
-    let chat = new Chat();
-   let chats = await chat.getChatConvo(req.params.id, req.params.chatContactId);
-   new JsonResponse(req, res).jsonSuccess(chats, new Messages().SUCCESSFULLY_RECEIVED)
-
-}
-    
-    `,
-};
-// initializer functions
-const initializers = {
-  initDbConnection: async function () {
-    await fs.appendFile("./db.js", fileContent.dbFileContent);
-    console.log("✅ Database Config file created successfully.\n");
-  },
-
-  initMainAppFile: async function () {
-    await fs.appendFile("./app.js", fileContent.appFileContent);
-    console.log("✅ App.js file created successfully.\n");
-  },
-  initEnv: async function () {
-    const PORT = await new Promise((resolve) => {
-      rl.question("👉Enter the Port [Default-4000] 💁‍♂️ : ", (answer) => {
-        resolve(answer);
-      });
-    });
-    const CONNECTION_STRING = await new Promise((resolve) => {
-      rl.question("👉Enter the Connection String 💁‍♂️ : ", (answer) => {
-        resolve(answer);
-      });
-    });
-   
-
-    await fs.appendFile(
-      ".env",
-      fileContent.envFileContent(PORT, CONNECTION_STRING)
-    );
-
-    console.log("✅ Env file created successfully.\n");
-  },
-
-  initGitIgnore: async function () {
-    await fs.appendFile(".gitignore", fileContent.gitIgnoreFileContent);
-    console.log("✅ Git Ignore file created successfully.\n");
-  },
-
-  initPackageFile: async function () {
-    await fs.appendFile("package.json", fileContent.packageJsonFileContent);
-    console.log("✅ Package.json file created successfully.\n");
-  },
-
-  initConstants: async function () {
-    const contsantsDir = path.join(__dirname, "constants");
-    await fs.mkdir(contsantsDir, { recursive: true });
-    console.log("✅ Constants folder created successfully.");
-    await fs.writeFile(
-      "./constants/Messages.js",
-      fileContent.messageFileContent
-    );
-    console.log("✅ Messages file created successfully.\n");
-  },
-
-  initMVC: async function () {
-    const modelsDir = path.join(__dirname, "models");
-    await fs.mkdir(modelsDir, { recursive: true });
-    console.log("✅ Models folder created successfully.");
-
-    const controllersDir = path.join(__dirname, "controllers");
-    await fs.mkdir(controllersDir, { recursive: true });
-    console.log("✅ Controllers folder created successfully.");
-
-    await fs.writeFile("router.js", fileContent.routerFileContent);
-    console.log("✅ Router file created successfully.\n");
-  },
-  initHelpers: async function () {
-    const helperDir = path.join(__dirname, "helper");
-    await fs.mkdir(helperDir, { recursive: true });
-    console.log("✅ Helper folder created successfully.\n");
-    await fs.writeFile(
-      "./helper/JsonResponse.js",
-      fileContent.JsonResponseFileContent
-    );
-    console.log("✅ JsonResponse file created successfully.");
-    await fs.writeFile(
-      "./helper/JWTAuthHelper.js",
-      fileContent.JWTAuthHelperFileContent
-    );
-    console.log("✅ JWTAuthHelper file created successfully.");
-
-    await fs.writeFile("./helper/TryCatch.js", fileContent.tryCatchFileContent);
-    console.log("✅ TryCatch file created successfully.\n");
-  },
-};
-// dependency installer
-const installDependency = (dependency) => {
-  return new Promise((resolve, reject) => {
-    exec(`npm install ${dependency}`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error installing ${dependency}:`, stderr);
-        reject(error);
-      } else {
-        console.log(`Successfully installed ${dependency}:`, stdout);
-        resolve(stdout);
-      }
-    });
-  });
-};
-//code inserter
-async function insertCode(
-  importMarker,
-  routeMarker,
-  filePath,
-  importContent,
-  routeContent,
-  data
-) {
-  // Insert import content
-  let importIndex = data.indexOf(importMarker);
-  if (importIndex !== -1) {
-    data =
-      data.slice(0, importIndex + importMarker.length) +
-      "\n" +
-      importContent +
-      data.slice(importIndex + importMarker.length);
-  } else {
-    console.error(`Marker "${importMarker}" not found in file.`);
-  }
-
-  // Insert route content
-  let routeIndex = data.indexOf(routeMarker);
-  if (routeIndex !== -1) {
-    data =
-      data.slice(0, routeIndex + routeMarker.length) +
-      "\n" +
-      routeContent +
-      data.slice(routeIndex + routeMarker.length);
-  } else {
-    console.error(`Marker "${routeMarker}" not found in file.`);
-  }
-
-  // Write the modified content back to the file
-  await fs.writeFile(filePath, data, "utf8");
-  console.log(
-    `✅ Content appended below the markers "${importMarker}" and "${routeMarker}" successfully!`
-  );
-}
 //Initial Initializing
-// Ensure models directory exists
 async function initialize() {
   try {
-    initializers.initPackageFile();
+     projectDirPath = path.join(__dirname, "test");
+    await fs.mkdir(projectDirPath, { recursive: true });
+    console.log("✅ Project folder created successfully.");
+    mvcInitializers.initPackageFile(projectDirPath);
     console.log("📦 Installing Packages...");
-    await installDependency(dependencyList);
+    await dependencyInstaller(dependencyUtil.DEPENDENCY_LIST, projectDirPath, false);
+    await dependencyInstaller(dependencyUtil.DEV_DEPENDENCY_LIST, projectDirPath, true);
     console.log("✅ Installation Successfull...");
-    await initializers.initMainAppFile();
-    await initializers.initDbConnection();
-    await initializers.initEnv();
-    await initializers.initGitIgnore();
-    await initializers.initConstants();
-    await initializers.initHelpers();
-    await initializers.initMVC();
-    rl.close();
+    await mvcInitializers.initMainAppFile(projectDirPath);
+    await mvcInitializers.initDbConnection(projectDirPath);
+    await mvcInitializers.initEnv(projectDirPath);
+    await mvcInitializers.initGitIgnore(projectDirPath);
+    await mvcInitializers.initConstants(projectDirPath);
+    await mvcInitializers.initHelpers(projectDirPath);
+    await mvcInitializers.initMVC(projectDirPath);
+    // rl.close();
     menu();
   } catch (err) {
-    console.error("❌ Error during initialization:", err.message);
+    console.error("❌ Error during initialization2:", err);
   }
 }
 
@@ -1285,7 +79,7 @@ async function askForAttributes(modelName) {
         });
         break;
       case "no":
-        actorModelFileContent += fileContent.actorModelFileContent(modelName);
+        actorModelFileContent += mvcFileContent.actorModelFileContent(modelName);
 
         await createActorControllerfile(modelName);
 
@@ -1331,7 +125,7 @@ async function askForNonActorAttributes(modelName) {
       case "no":
         // console.log(nonActorAttributes)
         // flCapitalisedSubModuleName = capitalizeFirstLetter(subModuleName)
-        ModelFileContent += fileContent.nonActorModelFileContent(
+        ModelFileContent += mvcFileContent.nonActorModelFileContent(
           modelName,
           nonActorAttributes
         );
@@ -1355,7 +149,7 @@ async function askForNonActorAttributes(modelName) {
 async function createActorControllerfile(modelname) {
   await fs.appendFile(
     `./controllers/${modelname.toLowerCase()}Controller.js`,
-    fileContent.actorControllerFileContent(modelname)
+    mvcFileContent.actorControllerFileContent(modelname)
   );
   console.log("\n✅ Contoller File Created Successfully!\n");
 }
@@ -1363,7 +157,7 @@ async function createActorControllerfile(modelname) {
 async function createNonActorController(modelname) {
   await fs.appendFile(
     `./controllers/${modelname.toLowerCase()}Controller.js`,
-    fileContent.nonActorControllerFileContent(modelname)
+    mvcFileContent.nonActorControllerFileContent(modelname)
   );
   console.log("✅ Contoller File Created Successfully!\n");
 }
@@ -1396,7 +190,7 @@ router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyT
     const importMarker = "//imports here";
     const routeMarker = "//code here";
 
-    await insertCode(
+    await codeInserter(
       importMarker,
       routeMarker,
       "./router.js",
@@ -1432,7 +226,7 @@ router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyT
     // Define marker comments
     const importMarker = "//imports here";
     const routeMarker = "//code here";
-    await insertCode(
+    await codeInserter(
       importMarker,
       routeMarker,
       "./router.js",
@@ -1447,11 +241,11 @@ router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyT
 
 //CHAT INTERFACE
 async function addChatInterface() {
-  await fs.appendFile(`./models/Chat.js`, fileContent.chatModelFileContent);
+  await fs.appendFile(`./models/Chat.js`, mvcFileContent.chatModelFileContent);
 
   await fs.appendFile(
     `./controllers/chatController.js`,
-    fileContent.chatControllerFileContent
+    mvcFileContent.chatControllerFileContent
   );
 
   //add chat routes
@@ -1467,7 +261,7 @@ async function addChatInterface() {
     const importMarker = "//imports here";
     const routeMarker = "//code here";
 
-    await insertCode(
+    await codeInserter(
       importMarker,
       routeMarker,
       "./router.js",
@@ -1511,7 +305,7 @@ async function createFileUploadRoutes() {
     const importMarker = "//imports here";
     const routeMarker = "//code here";
 
-    await insertCode(
+    await codeInserter(
       importMarker,
       routeMarker,
       "./router.js",
@@ -1524,7 +318,7 @@ async function createFileUploadRoutes() {
 async function addFileUpload() {
   console.log("📦 Installing Packages...");
 
-  await installDependency("multer cloudinary");
+  await dependencyInstaller("multer cloudinary", projectDirPath, false);
   console.log("📦 Installation Complete...");
 
   // After installing the packages, get their credentials
@@ -1553,16 +347,16 @@ async function addFileUpload() {
   await createFileUploadRoutes();
 
   // Adding the middleware and the helper file
-  await fs.appendFile(`./helper/cloudinary.js`, fileContent.cloudinaryHelperFileContent);
+  await fs.appendFile(`./helper/cloudinary.js`, mvcFileContent.cloudinaryHelperFileContent);
 
   const middlewareDir = path.join(__dirname, "middleware");
   await fs.mkdir(middlewareDir, { recursive: true });
-  await fs.appendFile(`./middleware/multer.js`, fileContent.uploadMiddlewareFileContent);
+  await fs.appendFile(`./middleware/multer.js`, mvcFileContent.uploadMiddlewareFileContent);
 
   // Adding upload Controller
   await fs.appendFile(
     `./controllers/uploadController.js`,
-    fileContent.uploadControllerFile
+    mvcFileContent.uploadControllerFile
   );
 
   // Add the public files
@@ -1599,7 +393,7 @@ router.post("/firebase/sendNotificationsToMultipleTopics", AuthHelper.verifyToke
   const importMarker = "//imports here";
   const routeMarker = "//code here";
 
-  await insertCode(
+  await codeInserter(
     importMarker,
     routeMarker,
     "./router.js",
@@ -1612,7 +406,7 @@ router.post("/firebase/sendNotificationsToMultipleTopics", AuthHelper.verifyToke
 async function addFirebaseFCM() {
   console.log("📦 Installing Packages...");
 
-  await installDependency("firebase-admin google-auth-library googleapis");
+  await dependencyInstaller("firebase-admin google-auth-library googleapis", projectDirPath, false);
   console.log("📦 Installation Complete...");
 
   const PROJECT_ID = await new Promise((resolve) => {
@@ -1636,7 +430,7 @@ async function addFirebaseFCM() {
     const importMarker = "//imports here";
     const routeMarker = "//code here";
 
-    await insertCode(
+    await codeInserter(
       importMarker,
       routeMarker,
       "./app.js",
@@ -1664,7 +458,7 @@ async function addFirebaseFCM() {
   );
   await fs.appendFile(
     `./controllers/firebaseController.js`,
-    fileContent.firebaseControllerFile
+    mvcFileContent.firebaseControllerFile
   );
   rl.close();
   menu();
@@ -1674,12 +468,12 @@ async function addFirebaseFCM() {
 
 async function addWhatsapp() {
   console.log("📦 Installing Axios...");
-  await installDependency("axios");
+  await dependencyInstaller("axios", projectDirPath, false);
   console.log("📦 Axios Installation Complete...");
 
   await fs.appendFile(
     `./helper/WhatsappNotification.js`,
-    fileContent.whatsappFileContent
+    mvcFileContent.whatsappFileContent
   );
   await fs.appendFile(
     `.env`,
@@ -1694,11 +488,11 @@ async function addWhatsapp() {
 }
 async function addNodemailer() {
   console.log("📦 Installing nodemailer...");
-  await installDependency("nodemailer");
+  await dependencyInstaller("nodemailer", projectDirPath, false);
   console.log("📦 Nodemailer Installation Complete...");
   await fs.appendFile(
     `./helper/Nodemailer.js`,
-    fileContent.nodemailerFileContent
+    mvcFileContent.nodemailerFileContent
   );
   await fs.appendFile(
     `.env`,
@@ -1722,8 +516,7 @@ function menu() {
   console.log("9. ❌ Quit");
   console.log("===============================\n");
 
-  ci();
-
+  rl = initializeReadline();
   rl.question("What would you like to work upon today?: ", async (answer) => {
     console.log(`👉 You entered: ${answer}\n`);
 
@@ -1732,7 +525,7 @@ function menu() {
         try {
           await initialize();
         } catch (err) {
-          console.error("❌ Error during initialization:", err.message);
+          console.error("❌ Error during initialization1:", err.message);
         }
         break;
 

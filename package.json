@@ -1,0 +1,35 @@
+{
+  "name": "mvcgenerator",
+  "version": "1.0.0",
+  "description": "A one-click Node.js MVC generator",
+  "main": "MVCBuilder.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node MVCBuilder.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kushkapadia/MVCGenerator.git"
+  },
+  "keywords": [
+    "MVC"
+  ],
+  "author": "Elite Coders",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kushkapadia/MVCGenerator/issues"
+  },
+  "homepage": "https://github.com/kushkapadia/MVCGenerator#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-mongo": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-async-handler": "^1.2.0",
+    "http-status-codes": "^2.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.7"
+  }
+}
