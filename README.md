@@ -1,7 +1,8 @@
 # Node.js MVC Generator 
 
 This Menu-Driven project is an industry-standard Node.js MVC generator that automates the creation of MVC structure in a Node.js project. 
-🖥️ Developed by Kush Kapadia, Mit Shah and Atharva Jadhav.
+🖥️ Developed by [Kush Kapadia](https://github.com/kushkapadia), [Mit Shah](https://github.com/Mitshah2406), and [Atharva Jadhav](https://github.com/Atharva884).
+
 
 ## Features
 
