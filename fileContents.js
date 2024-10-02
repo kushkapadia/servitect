@@ -914,7 +914,7 @@ exports.deleteById= async function(req, res){
                 
                 module.exports = ${modelName};             
             `,
-    actorModelFileContent: (modelName) => `
+    actorModelFileContent: (modelName, attributes) => `
                 const bcrypt = require("bcryptjs");
                 const Messages = require("../constants/Messages");
                 const TryCatch = require("../helper/TryCatch");
