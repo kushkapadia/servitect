@@ -504,6 +504,14 @@ async function addNodemailer() {
 
   menu();
 }
+async function addDocker() {
+  console.log("📦 Initializing Docker Setup...");
+  await mvcInitializers.initDocker(projectDirPath)
+
+  console.log(`✅ Docker Setup Completed.\n`);
+
+  menu();
+}
 async function menu() {
   console.log("==============MENU=============");
   console.log("1. 📁 Initialize");
@@ -514,7 +522,8 @@ async function menu() {
   console.log("6. 🔔 Firebase Push Notifications");
   console.log("7. 🟢 Add Whatsapp Notifications");
   console.log("8. 🗒️ Add Nodemailer");
-  console.log("9. ❌ Quit");
+  console.log("9. 🗄️ Add Docker Setup");
+  console.log("10. ❌ Quit");
   console.log("===============================\n");
 
   rl = initializeReadline();
@@ -593,6 +602,13 @@ async function menu() {
         }
         break;
       case "9":
+        try {
+          await addDocker();
+        } catch (err) {
+          console.error("❌ Error adding docker setup:", err.message);
+        }
+        break;
+      case "10":
         console.log("✨HAPPY CODING - Thank You For Using✨");
         exit(0);
       default:

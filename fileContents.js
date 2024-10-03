@@ -297,18 +297,21 @@ const express = require('express');
 const router = express.Router();
 const AuthHelper = require('./helper/JWTAuthHelper');
 const TryCatch = require('./helper/TryCatch');
-const Messages = require('./constants/Messages');
+const Messages = require('./constants/Message');
 
 //imports here
 
 //code here
+router.get("/health-check", (req,res)=>{
+  res.json("Server Health: OK");
+  })
 module.exports = router;
 `),
   firebaseControllerFile: formatFile(`
 const admin = require("firebase-admin");
 const { firebase } = require("googleapis/build/src/apis/firebase");
 const JsonResponse = require("../helper/JsonResponse");
-const Messages = require("../constants/Messages");
+const Messages = require("../constants/Message");
 
 
 exports.sendNotificationToCustomDevice = async (req, res) => {
@@ -474,7 +477,7 @@ try {
 }
 `),
   uploadControllerFile: formatFile(`
-const Messages = require("../constants/Messages");
+const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
 const jwt = require("jsonwebtoken");
 const {
@@ -632,7 +635,7 @@ exports.deleteMultipleFiles = async function (req, res) {
   cloudinaryHelperFileContent: formatFile(` 
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
-const Messages = require("../constants/Messages");
+const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
 
 cloudinary.config({
@@ -729,7 +732,7 @@ module.exports = upload;
   ,
 
   nonActorControllerFileContent: (modelname) => formatFile(` 
-const Messages = require("../constants/Messages");
+const Messages = require("../constants/Message");
   const JsonResponse = require("../helper/JsonResponse");
   const TryCatch = require("../helper/TryCatch");
   const ${modelname} = require("../models/${modelname}");
@@ -763,7 +766,7 @@ new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED
 }
     `),
   actorControllerFileContent: (modelname) => formatFile(` 
-    const Messages = require("../constants/Messages");
+    const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
 const TryCatch = require("../helper/TryCatch");
 const ${modelname} = require("../models/${modelname}");
@@ -872,7 +875,7 @@ exports.deleteById= async function(req, res){
     `),
   nonActorModelFileContent: (modelName, nonActorAttributes) => formatFile(`
                 const bcrypt = require("bcryptjs");
-                const Messages = require("../constants/Messages");
+                const Messages = require("../constants/Message");
                 const TryCatch = require("../helper/TryCatch");
                 const { ObjectId } = require('mongodb');
                 const ${modelName.toLowerCase()}sCollection = require("../db").db().collection("${modelName.toLowerCase()}");
@@ -918,7 +921,7 @@ exports.deleteById= async function(req, res){
             `),
   actorModelFileContent: (modelName, attributes) => formatFile(`
                 const bcrypt = require("bcryptjs");
-                const Messages = require("../constants/Messages");
+                const Messages = require("../constants/Message");
                 const TryCatch = require("../helper/TryCatch");
                 const { ObjectId } = require('mongodb');
                 const ${modelName.toLowerCase()}sCollection = require("../db").db().collection("${modelName.toLowerCase()}");
@@ -1054,7 +1057,7 @@ exports.deleteById= async function(req, res){
     `),
   chatControllerFileContent: formatFile(`
    
-    const Messages = require("../constants/Messages");
+    const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
 const Chat = require("../models/Chat");
 
@@ -1073,6 +1076,20 @@ exports.getChatConvo = async function(req, res){
 }
     
     `),
+
+  dockerFileContent: formatFile(`FROM node
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 4000
+
+CMD ["npm","run", "server"]`)
 };
 
 module.exports = fileContent;

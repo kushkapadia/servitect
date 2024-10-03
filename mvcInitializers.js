@@ -106,4 +106,16 @@ module.exports =  initializers = {
  mvcFileContent.tryCatchFileContent);
         console.log("✅ TryCatch file created successfully.\n");
     },
+    initDocker: async function (projectDirPath) {
+        const dirName = "initialImage"
+        const tagName = "v1"
+        await fs.appendFile(`${projectDirPath}/Dockerfile`, mvcFileContent.dockerFileContent);
+        console.log("✅ Basic Docker file created successfully.\n");
+        console.log(`1) To build image : docker build -t ${dirName}:${tagName}.`)
+        console.log(`2) To use image (container invocation) : docker run -it -p 4000:4000 --rm ${dirName}:${tagName}`);
+        console.log("3) View Images: docker images")
+        console.log("4) View Containers(all): docker ps -a")
+        console.log(`5) Delete Image: docker rmi ${dirName}:${tagName}`)
+        console.log(`6) Remove Container: docker rm "containerName"`)
+    }
 };
