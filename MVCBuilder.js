@@ -369,8 +369,6 @@ async function addFileUpload() {
   const imagesDir = path.join(publicDir, "images");
   await fs.mkdir(imagesDir, { recursive: true });
 
-
-  rl.close();
   menu();
 }
 
@@ -443,7 +441,7 @@ async function addFirebaseFCM() {
       data
     );
     await createFirebaseRoutes();
-    rl.close();
+
     menu();
   } catch (err) {
     console.error(`❌ Error: ${err.message}`);
@@ -464,7 +462,6 @@ async function addFirebaseFCM() {
     `${projectDirPath}/controllers/firebaseController.js`,
     mvcFileContent.firebaseControllerFile
   );
-  rl.close();
   menu();
 }
 
@@ -487,7 +484,7 @@ async function addWhatsapp() {
   console.log(
     `✅ Whatsapp Feature Added.\nMake Sure to add 🔐 access token in environment variables.\n`
   );
-  rl.close();
+
   menu();
 }
 async function addNodemailer() {
@@ -504,7 +501,7 @@ async function addNodemailer() {
   );
 
   console.log(`✅ Email Feature Added.\n`);
-  rl.close();
+
   menu();
 }
 async function menu() {
@@ -600,7 +597,6 @@ async function menu() {
         exit(0);
       default:
         console.log("❌ Invalid Input. Please enter a valid option.\n");
-        rl.close();
         menu();
         break;
     }
