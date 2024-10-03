@@ -274,7 +274,6 @@ async function addChatInterface() {
       routeContent,
       data
     );
-    rl.close();
     menu();
   } catch (err) {
     console.error(`❌ Error: ${err.message}`);

@@ -1,6 +1,8 @@
+const formatFile = require("./fileFormatter")
+
 // all Essential MVC File contents
-module.exports =  fileContent = {
-    nodemailerFileContent: `const nodemailer = require("nodemailer")
+const fileContent = {
+  nodemailerFileContent: formatFile(`const nodemailer = require("nodemailer")
 require("dotenv").config()
 class Nodemailer{
     recieverEmail
@@ -44,8 +46,8 @@ class Nodemailer{
     }
 }
 module.exports = Nodemailer
-`,
-    whatsappFileContent: `import axios from "axios"
+`),
+  whatsappFileContent: formatFile(`import axios from "axios"
 require("dotenv").config()
 class WhatsappNotification {
     numberToSend;
@@ -84,8 +86,8 @@ class WhatsappNotification {
     }
 }
 module.exports = WhatsappNotification
-`,
-    dbFileContent: `const {MongoClient} = require('mongodb')
+`),
+  dbFileContent: formatFile(`const {MongoClient} = require('mongodb')
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -100,8 +102,8 @@ dotenv.config()
       const app = require('./app')
       app.listen(process.env.PORT)
     }
-      start()`,
-    appFileContent: (routePrefix) => `const express = require("express");
+      start()`),
+  appFileContent: (routePrefix) => formatFile(`const express = require("express");
 const router = require("./router");
 const morgan = require("morgan");
 
@@ -129,11 +131,11 @@ app.use(cors());
 
 
 module.exports = app;
-`,
-    envFileContent: (PORT, CONNECTION_STRING) =>
-        `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
-    gitIgnoreFileContent: `/node_modules\n.env`,
-    packageJsonFileContent: `{
+`),
+  envFileContent: (PORT, CONNECTION_STRING) =>
+    `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
+  gitIgnoreFileContent: `/node_modules\n.env`,
+  packageJsonFileContent: `{
   "name": "backend",
   "version": "1.0.0",
   "description": "",
@@ -150,7 +152,7 @@ module.exports = app;
   }
 }
 `,
-    messageFileContent: `
+  messageFileContent: formatFile(`
         let Messages = function () {
 
         };
@@ -191,8 +193,8 @@ module.exports = app;
             "Failed to delete from cloudinary.";
         module.exports = Messages;
         
-        `,
-    JsonResponseFileContent: `
+        `),
+  JsonResponseFileContent: formatFile(`
         
 const HttpStatus = require("http-status-codes");
 
@@ -229,8 +231,8 @@ JsonResponse.prototype.jsonSuccess = function(data, message) {
   }
 
   module.exports = JsonResponse
-        `,
-    JWTAuthHelperFileContent: `        
+        `),
+  JWTAuthHelperFileContent: formatFile(`        
 const jwt = require("jsonwebtoken");
 const JsonResponse = require('./JsonResponse');
 
@@ -260,8 +262,8 @@ console.log("here")
       // return true
   }
 };
-        `,
-    tryCatchFileContent: `
+        `),
+  tryCatchFileContent: formatFile(`
 const JsonResponse = require('./JsonResponse')
 
 let  TryCatch = function(handler){
@@ -289,8 +291,8 @@ this.handler = handler
     }
 
     module.exports = TryCatch
-`,
-    routerFileContent: `
+`),
+  routerFileContent: formatFile(`
 const express = require('express');
 const router = express.Router();
 const AuthHelper = require('./helper/JWTAuthHelper');
@@ -301,8 +303,8 @@ const Messages = require('./constants/Messages');
 
 //code here
 module.exports = router;
-`,
-    firebaseControllerFile: `
+`),
+  firebaseControllerFile: formatFile(`
 const admin = require("firebase-admin");
 const { firebase } = require("googleapis/build/src/apis/firebase");
 const JsonResponse = require("../helper/JsonResponse");
@@ -470,8 +472,8 @@ try {
   // new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
 
 }
-`,
-    uploadControllerFile: `
+`),
+  uploadControllerFile: formatFile(`
 const Messages = require("../constants/Messages");
 const JsonResponse = require("../helper/JsonResponse");
 const jwt = require("jsonwebtoken");
@@ -626,8 +628,8 @@ exports.deleteMultipleFiles = async function (req, res) {
   );
 };
 
-    `,
-    cloudinaryHelperFileContent: ` 
+    `),
+  cloudinaryHelperFileContent: formatFile(` 
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const Messages = require("../constants/Messages");
@@ -704,8 +706,8 @@ module.exports = {
   deleteSingleFileFromCloudinary,
   deleteMultipleFilesFromCloudinary,
 };
-  `,
-    uploadMiddlewareFileContent: `
+  `),
+  uploadMiddlewareFileContent: formatFile(`
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -723,10 +725,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 module.exports = upload;
-  `
-    ,
+  `)
+  ,
 
-    nonActorControllerFileContent: (modelname) => ` 
+  nonActorControllerFileContent: (modelname) => formatFile(` 
 const Messages = require("../constants/Messages");
   const JsonResponse = require("../helper/JsonResponse");
   const TryCatch = require("../helper/TryCatch");
@@ -759,8 +761,8 @@ exports.deleteById = async function (req, res) {
 await ${modelname.toLowerCase()}.deleteById()
 new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
 }
-    `,
-    actorControllerFileContent: (modelname) => ` 
+    `),
+  actorControllerFileContent: (modelname) => formatFile(` 
     const Messages = require("../constants/Messages");
 const JsonResponse = require("../helper/JsonResponse");
 const TryCatch = require("../helper/TryCatch");
@@ -867,8 +869,8 @@ exports.deleteById= async function(req, res){
  await ${modelname.toLowerCase()}.deleteById()
  new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
 }
-    `,
-    nonActorModelFileContent: (modelName, nonActorAttributes) => `
+    `),
+  nonActorModelFileContent: (modelName, nonActorAttributes) => formatFile(`
                 const bcrypt = require("bcryptjs");
                 const Messages = require("../constants/Messages");
                 const TryCatch = require("../helper/TryCatch");
@@ -913,8 +915,8 @@ exports.deleteById= async function(req, res){
                 }
                 
                 module.exports = ${modelName};             
-            `,
-    actorModelFileContent: (modelName, attributes) => `
+            `),
+  actorModelFileContent: (modelName, attributes) => formatFile(`
                 const bcrypt = require("bcryptjs");
                 const Messages = require("../constants/Messages");
                 const TryCatch = require("../helper/TryCatch");
@@ -1000,9 +1002,9 @@ exports.deleteById= async function(req, res){
                 }
                 
                 module.exports = ${modelName};             
-            `,
+            `),
 
-    chatModelFileContent: `
+  chatModelFileContent: formatFile(`
     const chatsCollection = require('../db').db().collection("chats");
 
     const { ObjectId } = require('mongodb');
@@ -1049,8 +1051,8 @@ exports.deleteById= async function(req, res){
     };
           
     module.exports = Chat
-    `,
-    chatControllerFileContent: `
+    `),
+  chatControllerFileContent: formatFile(`
    
     const Messages = require("../constants/Messages");
 const JsonResponse = require("../helper/JsonResponse");
@@ -1070,5 +1072,7 @@ exports.getChatConvo = async function(req, res){
 
 }
     
-    `,
+    `),
 };
+
+module.exports = fileContent;
