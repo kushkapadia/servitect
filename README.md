@@ -126,7 +126,7 @@ my-project/
 
 ### Cloudinary Setup
 
-To enable file uploads with [Cloudinary](https://cloudinary.com/).:
+To enable file uploads with [Cloudinary](https://cloudinary.com/):
 
 1. Sign up for a Cloudinary account
 
@@ -134,11 +134,11 @@ To enable file uploads with [Cloudinary](https://cloudinary.com/).:
 
 To use Firebase Cloud Messaging:
 
- 1.⁠ ⁠Create a private key file. 
- 2. To create the file, setup a firebase project using the [Firebase Console](https://console.firebase.google.com/u/0/?pli=1).
- 3. Go to 🛠️ settings -> ⛅ Cloud Messaging Tab. Enable it. 
- 4. Go to service accounts tab -> generate 🔐 private key. 
- 5. Copy content of that file as it as to 📂 "firebase-key.json"
+1. Create a private key file.  
+2. To create the file, set up a Firebase project using the [Firebase Console](https://console.firebase.google.com/u/0/?pli=1).  
+3. Go to 🛠️ **Settings** -> ⛅ **Cloud Messaging** tab. Enable it.  
+4. Go to **Service accounts** tab -> generate 🔐 **private key**.  
+5. Copy the content of that file as it is to 📂 **"firebase-key.json"**.  
 
 
 ### Whatsapp Setup
