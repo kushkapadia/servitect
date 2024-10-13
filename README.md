@@ -1,6 +1,4 @@
-Here’s a detailed README for your npm package **servitect**:
 
----
 
 # Servitect
 
