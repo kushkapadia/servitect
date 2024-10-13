@@ -63,7 +63,7 @@ module.exports =  initializers = {
     },
 
     initConstants: async function(projectDirPath) {
-        console.log("Constansts Logger "+ __dirname)
+
         const contsantsDir = path.join(projectDirPath , `constants`);
         await fs.mkdir(contsantsDir, { recursive: true });
         console.log("✅ Constants folder created successfully.");

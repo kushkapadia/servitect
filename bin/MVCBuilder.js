@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const path = require("path");
 const readline = require("readline");
 const { exec } = require("child_process");
@@ -497,7 +498,7 @@ async function addNodemailer() {
   );
   await fs.appendFile(
     `${projectDirPath}/.env`,
-    '\nNODEMAILER_ADMIN_EMAIL="atharvalolzzz96@gmail.com"\nNODEMAILER_ADMIN_PASSWORD="cpknpwooqdjulvop"'
+    '\nNODEMAILER_ADMIN_EMAIL=""\nNODEMAILER_ADMIN_PASSWORD=""'
   );
 
   console.log(`✅ Email Feature Added.\n`);
@@ -533,7 +534,7 @@ async function menu() {
         resolve(answer);
       });
     });
-    projectDirPath = path.join(__dirname, projectDirName == null || projectDirName == '' ? "project" : projectDirName);
+    projectDirPath = path.join(process.cwd(), projectDirName == null || projectDirName == '' ? "project" : projectDirName);
     await fs.mkdir(projectDirPath, { recursive: true });
 
   }
@@ -622,6 +623,6 @@ async function menu() {
 console.log("\n===============================");
 console.log("       🚀 Welcome to the        ");
 console.log("     💼 Project Manager CLI     ");
-console.log(" 🙋‍♂️ Dev: Kush Kapadia | Mit Shah    ");
+console.log(" 🙋‍♂️ Dev: Kush Kapadia | Mit Shah | Atharva Jadhav  ");
 console.log("===============================\n");
 menu();
