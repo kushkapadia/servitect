@@ -94,14 +94,7 @@ Follow the interactive prompts to configure your project.
    ```
 4. Follow the prompts to set up your project
 
-### Available Commands
 
-- `npx mvc-create`: Initializes a new MVC project
-- `npx mvc-add-model`: Adds a new model to your project
-- `npx mvc-add-controller`: Adds a new controller
-- `npx mvc-add-route`: Adds a new route
-
-(Add more commands as applicable)
 
 ## 🗂️ Project Structure
 
@@ -110,21 +103,15 @@ Here's an overview of the generated project structure:
 ```
 my-project/
 │
-├── src/
-│   ├── models/
-│   ├── views/
-│   ├── controllers/
-│   ├── routes/
-│   ├── middlewares/
-│   ├── utils/
-│   └── config/
+├── models/
+├── controllers/
+├── middleware/
+│── helper/
+│── public/
 │
-├── tests/
-├── public/
 ├── .env
 ├── .gitignore
 ├── package.json
-└── README.md
 ```
 
 ## 🔧 Configuration
@@ -184,4 +171,4 @@ This project is [MIT](https://opensource.org/licenses/MIT) licensed.
 
 ---
 
-Made with ❤️ by [Your Name/Organization]
+Made with ❤️ by Elite Coders
