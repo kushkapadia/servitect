@@ -1,11 +1,14 @@
 {
-  "name": "mvcgenerator",
+  "name": "architect-js",
   "version": "1.0.0",
   "description": "A one-click Node.js MVC generator",
   "main": "MVCBuilder.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node MVCBuilder.js"
+    "build": "node ./bin/MVCBuilder.js"
+  },
+  "bin": {
+    "mvc-create": "./bin/MVCBuilder.js"
   },
   "repository": {
     "type": "git",
