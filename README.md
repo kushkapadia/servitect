@@ -61,7 +61,7 @@ Automate the creation of a well-structured Model-View-Controller (MVC) pattern f
 Install Servitect using npm:
 
 ```bash
-npm install servitect
+npm install -g servitect
 ```
 
 ## 🏁 **Quick Start**
@@ -69,7 +69,7 @@ npm install servitect
 After installation, you can create a new MVC project by running:
 
 ```bash
-npx mvc-create
+mvc-create
 ```
 
 Follow the `Menu` to configure your project.
@@ -82,27 +82,20 @@ Follow the `Menu` to configure your project.
 2. Navigate to the directory where you want to create your project
 3. Run the command
    ```bash
-   npm init -y
+   npm i -g servitect
    ```
-5. Run the command
+4. Run the command
    ```bash
-   npm i servitect
+   mvc-create
    ```
-6. Run the command
+5. Follow the `Menu` to configure your project.
+6. Run the command:
    ```bash
-   npx mvc-create
-   ``` 
-8. Run the command:
-   ```bash
-   npx mvc-create
-   ```
-9. Follow the `Menu` to configure your project.
-10. Run the command:
-   ```bash
+   cd project-name
    npm run server
    ```
 to run the server.
-If you see `connected` on your console, your apis are ready to test.
+If you see `connected` on your console, your APIs are ready to test.
 
 
 ## 🗂️ Project Structure
@@ -125,17 +118,7 @@ my-project/
 
 ## 🔧 Configuration
 
-### Environment Variables
 
-Create a `.env` file in the root of your project and add the following:
-
-```env
-PORT=3000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-```
-
-Adjust these values according to your needs.
 
 ## 🔌 Integrations
 
