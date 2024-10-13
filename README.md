@@ -8,10 +8,9 @@ Automate the creation of a well-structured Model-View-Controller (MVC) pattern f
 `Servitect` comes with a variety of built-in features that streamline the development process:
 
 ### 1. MVC Folder Structure Generation
-- Automatically generates a standard Model-View-Controller folder structure.
+- Automatically generates a standard Model-Controller folder structure.
 - Creates the directories and files for:
   - **Models**: Schema definitions and database models.
-  - **Views**: Template files for rendering views.
   - **Controllers**: Handles logic and data flow between models and views.
   - **Routes**: Defines API routes and endpoints.
 - Pre-configured to follow best practices for scalability and maintainability.
@@ -21,14 +20,14 @@ Automate the creation of a well-structured Model-View-Controller (MVC) pattern f
 - Pre-configured for easy expansion and customization, allowing you to focus on building out your business logic.
 
 ### 3. Best Practices for Scalability and Error Handling
-- Comes with pre-configured error-handling mechanisms.
+- Comes with pre-configured global error-handling mechanisms.
 - Follows scalable design patterns to ensure maintainability even as your application grows.
 - Implements best practices for middleware and request validation.
 
-### 4. Pre-Configured Authentication APIs
+### 4. Authentication APIs
 - Provides basic authentication APIs out of the box.
 - JWT-based authentication is available for secure user sessions.
-- Easily configure authentication for any actor entity in your project.
+- Auto configures authentication for any actor entity in your project.
 
 ### 5. CRUD API Generation
 - Quickly generate Create, Read, Update, Delete (CRUD) APIs for any entity.
@@ -37,41 +36,35 @@ Automate the creation of a well-structured Model-View-Controller (MVC) pattern f
 
 ### 6. File Uploads to Cloudinary
 - Includes an option to add file upload functionality to Cloudinary.
-- Pre-configured with Cloudinary integration, making it easy to manage media assets.
+- Configured with Cloudinary integration, making it easy to manage media assets.
 
 ### 7. WhatsApp Notifications Integration
 - Integrates with WhatsApp for sending notifications directly from your application.
 - Useful for sending alerts, reminders, or updates to users.
 
-### 8. Firebase FCM Integration
+### 8. Firebase Cloud Messaging API Integration for Mobile Apps
 - Provides a simple setup for Firebase Cloud Messaging (FCM).
-- Send push notifications to users with minimal setup.
+- Send push notifications to users.
 - Great for real-time updates and user engagement.
 
 ### 9. NodeMailer Integration
-- Pre-configured integration with NodeMailer for email communication.
+- Integration with NodeMailer for email communication.
 - Quickly set up email functionality to send password resets, welcome emails, and more.
-- Works out of the box with minimal configuration required.
 
 ### 10. Chat Logic with Database Model and API Creation
 - Ready-to-use logic for implementing chat features.
 - Generates chat database models and API endpoints.
 - Easily set up messaging functionality within your applications.
 
-### 11. Local LLM Integration Using LangChain and Ollama
-- Integrates with LangChain and Ollama for local large language model (LLM) support.
-- Enables advanced AI-driven interactions and language processing directly in your app.
-- Easily set up custom LLM-based features without external dependencies.
+## 📦 **Installation**
 
-## 📦 Installation
-
-Install Servitect globally using npm:
+Install Servitect using npm:
 
 ```bash
-npm install -g servitect
+npm install servitect
 ```
 
-## 🏁 Quick Start
+## 🏁 **Quick Start**
 
 After installation, you can create a new MVC project by running:
 
@@ -79,20 +72,31 @@ After installation, you can create a new MVC project by running:
 npx mvc-create
 ```
 
-Follow the interactive prompts to configure your project.
+Follow the `Menu` to configure your project.
 
-## 📚 Usage
+## 📚 **Usage**
 
 ### Creating a New Project
 
 1. Open your terminal
 2. Navigate to the directory where you want to create your project
-3. Run the command:
+3. Run the command
+   ```bash
+   npm init -y
+   ```
+5. Run the command
+   ```bash
+   npm i servitect
+   ```
+6. Run the command
+   ```bash
+   npx mvc-create
+   ``` 
+8. Run the command:
    ```bash
    npx mvc-create
    ```
-4. Follow the prompts to set up your project
-
+9. Follow the prompts to set up your project
 
 
 ## 🗂️ Project Structure
