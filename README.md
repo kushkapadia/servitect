@@ -96,7 +96,13 @@ Follow the `Menu` to configure your project.
    ```bash
    npx mvc-create
    ```
-9. Follow the prompts to set up your project
+9. Follow the `Menu` to configure your project.
+10. Run the command:
+   ```bash
+   npm run server
+   ```
+to run the server.
+If you see `connected` on your console, your apis are ready to test.
 
 
 ## 🗂️ Project Structure
