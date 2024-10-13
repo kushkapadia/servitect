@@ -4,18 +4,65 @@ Servitect (Server + Architect) is a powerful npm package designed to rapidly sca
 
 ## 🚀 Features
 
-- 🏗️ Automatic generation of MVC (Model-View-Controller) folder structure
-- 📁 Pre-configured files for routes, controllers, and models
-- 🔧 Best practices for scalability, maintainability, and error-handling
-- 🔐 Pre-configured basic authentication APIs
-- 🛠️ Pre-configured CRUD APIs for any created entity
-- 🔑 JWT-based authentication for any actor entity
-- 📤 Option to add file upload functionality with Cloudinary integration
-- 📱 WhatsApp Notifications integration
-- 🔔 Firebase FCM integration APIs in one click
-- 📧 NodeMailer Integration with a single click
-- 💬 Chat logic with database model and API creation
-- 🤖 Local LLM Integration using Langchain and Ollama
+## **Features**
+
+`Servitect` comes with a variety of built-in features that streamline the development process:
+
+### 1. MVC Folder Structure Generation
+- Automatically generates a standard Model-View-Controller folder structure.
+- Creates the directories and files for:
+  - **Models**: Schema definitions and database models.
+  - **Views**: Template files for rendering views.
+  - **Controllers**: Handles logic and data flow between models and views.
+  - **Routes**: Defines API routes and endpoints.
+- Pre-configured to follow best practices for scalability and maintainability.
+
+### 2. Pre-Configured Files
+- Basic template files are generated for routes, controllers, and models.
+- Pre-configured for easy expansion and customization, allowing you to focus on building out your business logic.
+
+### 3. Best Practices for Scalability and Error Handling
+- Comes with pre-configured error-handling mechanisms.
+- Follows scalable design patterns to ensure maintainability even as your application grows.
+- Implements best practices for middleware and request validation.
+
+### 4. Pre-Configured Authentication APIs
+- Provides basic authentication APIs out of the box.
+- JWT-based authentication is available for secure user sessions.
+- Easily configure authentication for any actor entity in your project.
+
+### 5. CRUD API Generation
+- Quickly generate Create, Read, Update, Delete (CRUD) APIs for any entity.
+- Pre-built controllers and routes to speed up the setup process.
+- Helps ensure consistency in API design.
+
+### 6. File Uploads to Cloudinary
+- Includes an option to add file upload functionality to Cloudinary.
+- Pre-configured with Cloudinary integration, making it easy to manage media assets.
+
+### 7. WhatsApp Notifications Integration
+- Integrates with WhatsApp for sending notifications directly from your application.
+- Useful for sending alerts, reminders, or updates to users.
+
+### 8. Firebase FCM Integration
+- Provides a simple setup for Firebase Cloud Messaging (FCM).
+- Send push notifications to users with minimal setup.
+- Great for real-time updates and user engagement.
+
+### 9. NodeMailer Integration
+- Pre-configured integration with NodeMailer for email communication.
+- Quickly set up email functionality to send password resets, welcome emails, and more.
+- Works out of the box with minimal configuration required.
+
+### 10. Chat Logic with Database Model and API Creation
+- Ready-to-use logic for implementing chat features.
+- Generates chat database models and API endpoints.
+- Easily set up messaging functionality within your applications.
+
+### 11. Local LLM Integration Using LangChain and Ollama
+- Integrates with LangChain and Ollama for local large language model (LLM) support.
+- Enables advanced AI-driven interactions and language processing directly in your app.
+- Easily set up custom LLM-based features without external dependencies.
 
 ## 📦 Installation
 
