@@ -1,0 +1,29 @@
+{
+  "name": "servitect",
+  "version": "1.0.0",
+  "description": "servitect stands for Server-Architect. A one-click Node.js MVC Server generator",
+  "main": "MVCBuilder.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ./bin/MVCBuilder.js"
+  },
+  "bin": {
+    "mvc-create": "./bin/MVCBuilder.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kushkapadia/MVCGenerator.git"
+  },
+  "keywords": [
+    "MVC"
+  ],
+  "author": "Elite Coders",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kushkapadia/MVCGenerator/issues"
+  },
+  "homepage": "https://github.com/kushkapadia/MVCGenerator#readme",
+  "dependencies": {
+    
+  }
+}
