@@ -1,7 +1,7 @@
 {
-  "name": "architect-js",
+  "name": "servitect",
   "version": "1.0.0",
-  "description": "A one-click Node.js MVC generator",
+  "description": "servitect stands for Server-Architect. A one-click Node.js MVC Server generator",
   "main": "MVCBuilder.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

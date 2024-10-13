@@ -623,6 +623,6 @@ async function menu() {
 console.log("\n===============================");
 console.log("       🚀 Welcome to the        ");
 console.log("     💼 Project Manager CLI     ");
-console.log(" 🙋‍♂️ Dev: Kush Kapadia | Mit Shah    ");
+console.log(" 🙋‍♂️ Dev: Kush Kapadia | Mit Shah | Atharva Jadhav  ");
 console.log("===============================\n");
 menu();
