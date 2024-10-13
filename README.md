@@ -64,6 +64,12 @@ Install Servitect using npm:
 npm install -g servitect
 ```
 
+For Linux and Mac users:
+
+```bash
+sudo npm install -g servitect
+```
+
 ## 🏁 **Quick Start**
 
 After installation, you can create a new MVC project by running:
@@ -98,7 +104,7 @@ to run the server.
 If you see `connected` on your console, your APIs are ready to test.
 
 
-## 🗂️ Project Structure
+## 🗂️ **Project Structure**
 
 Here's an overview of the generated project structure:
 
@@ -116,41 +122,36 @@ my-project/
 ├── package.json
 ```
 
-## 🔧 Configuration
-
-
-
-## 🔌 Integrations
+## 🔌 **Integrations**
 
 ### Cloudinary Setup
 
-To enable file uploads with Cloudinary:
+To enable file uploads with [Cloudinary](https://cloudinary.com/).:
 
 1. Sign up for a Cloudinary account
-2. Add the following to your `.env` file:
-   ```env
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
-   ```
 
 ### Firebase FCM Setup
 
 To use Firebase Cloud Messaging:
 
-1. Set up a Firebase project
-2. Add your Firebase configuration to `.env`:
-   ```env
-   FIREBASE_PROJECT_ID=your_project_id
-   FIREBASE_PRIVATE_KEY=your_private_key
-   FIREBASE_CLIENT_EMAIL=your_client_email
-   ```
+ 1.⁠ ⁠Create a private key file. 
+ 2. To create the file, setup a firebase project using the [Firebase Console](https://console.firebase.google.com/u/0/?pli=1).
+ 3. Go to 🛠️ settings -> ⛅ Cloud Messaging Tab. Enable it. 
+ 4. Go to service accounts tab -> generate 🔐 private key. 
+ 5. Copy content of that file as it as to 📂 "firebase-key.json"
+
+
+### Whatsapp Setup
+
+To use Firebase Cloud Messaging:
+
+--add whats app steps here.
 
 (Add setup instructions for other integrations)
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/yourusername/servitect/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/kushkapadia/servitect/issues).
 
 ## 📄 License
 
@@ -160,6 +161,8 @@ This project is [MIT](https://opensource.org/licenses/MIT) licensed.
 
 - Thanks to all contributors who have helped shape Servitect
 - Inspired by the need for rapid, scalable server development in the Node.js ecosystem
+
+## 🚀Happy Coding! 
 
 ---
 
