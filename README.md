@@ -2,6 +2,7 @@
 
 ### **Server + Architect = Servitect**
 Automate the creation of a well-structured Model-View-Controller (MVC) pattern for your Node.js projects with ease. `Servitect` is designed to help developers quickly scaffold a project, follow best practices, and integrate various functionalities with minimal setup.
+---
 
 ## 🚀 **Features**
 
@@ -163,7 +164,5 @@ This project is [MIT](https://opensource.org/licenses/MIT) licensed.
 - Inspired by the need for rapid, scalable server development in the Node.js ecosystem
 
 ## 🚀Happy Coding! 
-
----
 
 Made with ❤️ by Elite Coders
