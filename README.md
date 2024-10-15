@@ -29,7 +29,7 @@ Servitect streamlines the backend creation process, allowing developers to focus
 </div>
 
 
-### 1. MVC Folder Structure Generation
+### 1. 📁 MVC Folder Structure Generation
 
 - Automatically generates a standard Model-Controller folder structure.
 - Creates the directories and files for:
@@ -37,51 +37,51 @@ Servitect streamlines the backend creation process, allowing developers to focus
   - **Controllers**: Handles logic and data flow between models and views.
   - **Routes**: Defines CRUD endpoints.
 
-### 2. Best Practices for Scalability and Error Handling
+### 2. ✅ Best Practices for Scalability and Error Handling
 
 - Comes with pre-configured global error-handling mechanisms.
 - Implements best practices for middleware and request validation.
 - Follows scalable design patterns to ensure maintainability even as your application grows.
 
-### 3. Authentication APIs
+### 3. 🔒 Authentication APIs
 
 - Provides basic authentication APIs.
 - JWT-based authentication is available for secure user sessions.
 - Auto configures authentication for any actor entity in your project.
 
-### 4. CRUD API Generation
+### 4. 📝 CRUD API Generation
 
 - Quickly generate Create, Read, Update, Delete (CRUD) APIs for any entity.
 - Ensures consistency in API design.
 
-### 5. File Uploads to Cloudinary
+### 5. 📤 File Uploads to Cloudinary
 
 - Includes an option to add file upload functionality to Cloudinary.
 - Configured with Cloudinary integration, making it easy to manage media assets.
 
-### 6. WhatsApp Notifications Integration
+### 6. 🟢 WhatsApp Notifications Integration
 
 - Integrates with WhatsApp on the fly for sending notifications directly from your application.
 - Useful for sending alerts, reminders, or updates to users.
 
-### 7. Firebase Cloud Messaging API Integration for Mobile Apps
+### 7. 🔔 Firebase Cloud Messaging API Integration for Mobile Apps
 
 - Provides a simple setup for Firebase Cloud Messaging (FCM).
 - Send push notifications to users.
 - Great for real-time updates and user engagement.
 
-### 8. NodeMailer Integration
+### 8. 📨 NodeMailer Integration
 
 - Integration with NodeMailer for email communication.
 - Quickly set up email functionality to send password resets, welcome emails, and more.
 
-### 9. Chat Logic with Database Model and API Creation
+### 9. 💬 Chat Logic with Database Model and API Creation
 
 - Ready-to-use logic for implementing chat features.
 - Generates chat database models and API endpoints.
 - Easily set up messaging functionality within your applications.
 
-### 10. Docker Setup
+### 10. 🐳 Docker Setup
 - Quickly containerize your application with a pre-configured Docker setup.
 - Generates Docker files for easy deployment, ensuring consistency across different environments.
 
