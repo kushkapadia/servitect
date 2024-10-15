@@ -152,13 +152,13 @@ my-project/
 
 ## 🔌 **Integrations**
 
-### Cloudinary Setup
+### 1. Cloudinary Setup
 
 To enable file uploads with [Cloudinary](https://cloudinary.com/):
 
 1. Sign up for a Cloudinary account
 
-### Firebase FCM Setup
+### 2. Firebase FCM Setup
 
 To use Firebase Cloud Messaging:
 
@@ -168,7 +168,7 @@ To use Firebase Cloud Messaging:
 4. Go to **Service accounts** tab -> generate 🔐 **private key**.
 5. Copy the content of that file as it is to 📂 **"firebase-key.json"**.
 
-### Whatsapp Setup
+### 3. Whatsapp Setup
 
 To use Whatsapp APIs, refer the official documentaion:
 
