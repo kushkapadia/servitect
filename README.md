@@ -8,15 +8,15 @@ Automate the creation of a well-structured Model-View-Controller (MVC) pattern f
 <img src="https://github.com/kushkapadia/servitect/blob/main/servitectLogo.jpeg" alt="Description" width="400" height="250">
 </div>
 
-### Why Servitect?
+### 🤔 Why Servitect?
 
 Servitect is designed to simplify and accelerate the server development process by automating the setup of essential components for a modern backend. Here’s why you should choose Servitect:
 
-- **Speedy Development**: Perfect for **hackathons** and **rapid prototyping**, Servitect allows you to set up a fully functional server in minutes, letting you focus on building unique features and meeting tight deadlines rather than getting stuck in setup.
+- 🏎️ **Speedy Development**: Perfect for **hackathons** and **rapid prototyping**, Servitect allows you to set up a fully functional server in minutes, letting you focus on building unique features and meeting tight deadlines rather than getting stuck in setup.
 
-- **MongoDB Integration**: Support for **MongoDB** by default makes it ideal for modern applications that require a flexible and scalable NoSQL database.
-
-- **Customizable**: Servitect’s menu-driven approach allows you to pick and choose the features you need, giving you flexibility while still automating repetitive tasks.
+- 🗄️ **MongoDB Integration**: With built-in support for MongoDB, Servitect is ideal for modern applications that need a flexible and scalable NoSQL database.
+  
+- ⚙️ **Customizable**: Servitect’s menu-driven approach allows you to pick and choose the features you need, giving you flexibility while still automating repetitive tasks.
 
 Servitect streamlines the backend creation process, allowing developers to focus on building what matters most. Whether you're a beginner or an experienced developer, Servitect provides the tools you need to jumpstart your server development!
 
@@ -24,64 +24,66 @@ Servitect streamlines the backend creation process, allowing developers to focus
 
 `Servitect` comes with a variety of built-in features that streamline the development process:
 
+<div align="center">
+<img src="https://github.com/user-attachments/assets/6c13bfa0-892d-4ef8-bdb2-d6363e89a7e7" alt="Description" width="400" height="250">
+</div>
+
+
 ### 1. MVC Folder Structure Generation
 
 - Automatically generates a standard Model-Controller folder structure.
 - Creates the directories and files for:
-  - **Models**: Schema definitions and database models.
+  - **Models**: MongoDB Schema definitions and database models.
   - **Controllers**: Handles logic and data flow between models and views.
-  - **Routes**: Defines API routes and endpoints.
-- Pre-configured to follow best practices for scalability and maintainability.
+  - **Routes**: Defines CRUD endpoints.
 
-### 2. Pre-Configured Files
-
-- Basic template files are generated for routes, controllers, and models.
-- Pre-configured for easy expansion and customization, allowing you to focus on building out your business logic.
-
-### 3. Best Practices for Scalability and Error Handling
+### 2. Best Practices for Scalability and Error Handling
 
 - Comes with pre-configured global error-handling mechanisms.
-- Follows scalable design patterns to ensure maintainability even as your application grows.
 - Implements best practices for middleware and request validation.
+- Follows scalable design patterns to ensure maintainability even as your application grows.
 
-### 4. Authentication APIs
+### 3. Authentication APIs
 
-- Provides basic authentication APIs out of the box.
+- Provides basic authentication APIs.
 - JWT-based authentication is available for secure user sessions.
 - Auto configures authentication for any actor entity in your project.
 
-### 5. CRUD API Generation
+### 4. CRUD API Generation
 
 - Quickly generate Create, Read, Update, Delete (CRUD) APIs for any entity.
-- Pre-built controllers and routes to speed up the setup process.
-- Helps ensure consistency in API design.
+- Ensures consistency in API design.
 
-### 6. File Uploads to Cloudinary
+### 5. File Uploads to Cloudinary
 
 - Includes an option to add file upload functionality to Cloudinary.
 - Configured with Cloudinary integration, making it easy to manage media assets.
 
-### 7. WhatsApp Notifications Integration
+### 6. WhatsApp Notifications Integration
 
-- Integrates with WhatsApp for sending notifications directly from your application.
+- Integrates with WhatsApp on the fly for sending notifications directly from your application.
 - Useful for sending alerts, reminders, or updates to users.
 
-### 8. Firebase Cloud Messaging API Integration for Mobile Apps
+### 7. Firebase Cloud Messaging API Integration for Mobile Apps
 
 - Provides a simple setup for Firebase Cloud Messaging (FCM).
 - Send push notifications to users.
 - Great for real-time updates and user engagement.
 
-### 9. NodeMailer Integration
+### 8. NodeMailer Integration
 
 - Integration with NodeMailer for email communication.
 - Quickly set up email functionality to send password resets, welcome emails, and more.
 
-### 10. Chat Logic with Database Model and API Creation
+### 9. Chat Logic with Database Model and API Creation
 
 - Ready-to-use logic for implementing chat features.
 - Generates chat database models and API endpoints.
 - Easily set up messaging functionality within your applications.
+
+### 10. Docker Setup
+- Quickly containerize your application with a pre-configured Docker setup.
+- Generates Docker files for easy deployment, ensuring consistency across different environments.
 
 ## 📦 **Installation**
 
@@ -168,11 +170,10 @@ To use Firebase Cloud Messaging:
 
 ### Whatsapp Setup
 
-To use Firebase Cloud Messaging:
+To use Whatsapp APIs, refer the official documentaion:
 
---add whats app steps here.
+- [META Documentation](https://developers.facebook.com/docs/whatsapp/).
 
-(Add setup instructions for other integrations)
 
 ## 🤝 Contributing
 
