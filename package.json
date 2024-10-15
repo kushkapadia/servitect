@@ -1,6 +1,6 @@
 {
   "name": "servitect",
-  "version": "1.0.0",
+  "version": "1.2.2",
   "description": "servitect stands for Server-Architect. A one-click Node.js MVC Server generator",
   "main": "MVCBuilder.js",
   "scripts": {
@@ -23,7 +23,5 @@
     "url": "https://github.com/kushkapadia/MVCGenerator/issues"
   },
   "homepage": "https://github.com/kushkapadia/MVCGenerator#readme",
-  "dependencies": {
-    
-  }
+  "dependencies": {}
 }
