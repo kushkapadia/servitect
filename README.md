@@ -4,7 +4,8 @@
  
 Automate the creation of a well-structured Model-View-Controller (MVC) pattern for your Node.js projects with ease. `Servitect` is designed to help developers quickly scaffold a project, follow best practices, and integrate various functionalities with minimal setup.
 
-![Alt text](https://github.com/kushkapadia/servitect/blob/main/servitectLogo.jpeg)
+
+<img src="https://github.com/kushkapadia/servitect/blob/main/servitectLogo.jpeg" alt="Description" width="300" height="200">
 
 
 ## 🚀 **Features**
