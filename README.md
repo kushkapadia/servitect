@@ -8,8 +8,12 @@ Automate the creation of a well-structured Model-View-Controller (MVC) pattern f
 <img src="https://github.com/kushkapadia/servitect/blob/main/servitectLogo.jpeg" alt="Description" width="400" height="250">
 </div>
 
-
-
+## **Why Servitect?**
+Servitect is designed to simplify and accelerate the server development process by automating the setup of essential components for a modern backend. 
+Here’s why you should choose Servitect:
+-**Speedy Development**: Perfect for **_hackathons_** and rapid **_prototyping_**, Servitect allows you to set up a fully functional server in minutes, letting you focus on building unique features and meeting tight deadlines rather than getting stuck in setup.
+-**MongoDB Integration**: Support MongoDB by default to makes it ideal for modern applications.
+-**Customizable**: Servitect’s menu-driven approach allows you to pick and choose the features you need, giving you flexibility while still automating repetitive tasks.
 ## 🚀 **Features**
 
 `Servitect` comes with a variety of built-in features that streamline the development process:
