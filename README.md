@@ -174,6 +174,20 @@ To use Whatsapp APIs, refer the official documentaion:
 
 - [META Documentation](https://developers.facebook.com/docs/whatsapp/).
 
+### 🐣 New to Development? We’re Here to Help!
+
+If you are just starting your journey in server development or find certain concepts challenging, rest assured that we have the resources to assist you:
+
+- **YouTube Tutorials**: Visit our [YouTube channel](https://www.youtube.com/@CodeGenieKush) for comprehensive tutorials that guide you through the process of using Servitect and understanding the generated code.
+
+- **In-Depth Documentation**: Access our detailed [documentation](#) that covers features, commands, and industry best practices in a clear and approachable manner.
+
+- **Community Support**: Connect with us on LinkedIn for community support. Feel free to reach out with any questions or share your experiences. I’m here to provide assistance!
+   - [Kush Kapadia](https://www.linkedin.com/in/kushkapadia/)
+   - [Mit Shah](https://www.linkedin.com/in/mitshah2406/)
+   - [Atharva Jadhav](https://www.linkedin.com/in/atharvajadhav88/)
+
+With these resources at your disposal, you’ll be well-equipped to leverage Servitect and develop outstanding applications efficiently and on the go.
 
 ## 🤝 Contributing
 
