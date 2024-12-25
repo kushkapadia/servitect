@@ -7,4 +7,4 @@ const removeIndentation = (str) => {
     );
     return lines.map(line => line.slice(minIndent)).join("\n").trim();
 };
-module.exports = removeIndentation;
+export default removeIndentation;

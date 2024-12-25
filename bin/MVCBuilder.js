@@ -1,18 +1,20 @@
 #!/usr/bin/env node
-const path = require("path");
-const readline = require("readline");
-const { exec } = require("child_process");
+import path from "path";
+import readline from "readline";
+import { exec } from "child_process";
 
-const dependencyUtil= require("./dependencies")
-const mvcFileContent = require("./fileContents")
+import * as dependencyUtil from "./dependencies.js";
+import mvcFileContent from "./fileContents.js";
 let projectDirPath;
 // const fs = require('fs');
-const fs = require("fs/promises");
-const { exit } = require("process");
-const mvcInitializers = require("./mvcInitializers");
-const dependencyInstaller = require("./dependencyInstaller");
-const codeInserter = require("./codeInserter")
-let { initializeReadline, rl} = require("./readlineInterface.js")
+import * as fs from "fs/promises";
+import { exit } from "process";
+import mvcInitializers from "./mvcInitializers.js";
+
+import dependencyInstaller from "./dependencyInstaller.js";
+import codeInserter from "./codeInserter.js";
+import { initializeReadline } from './readlineInterface.js';
+
 let content = "";
 let attributes = "";
 let nonActorAttributes = "";
@@ -20,7 +22,7 @@ let actorModelFileContent = "";
 let ModelFileContent = "";
 
 
-
+let rl = initializeReadline();
 //Initial Initializing
 async function initialize() {
   try {
@@ -527,7 +529,7 @@ async function menu() {
   console.log("10. ❌ Quit");
   console.log("===============================\n");
 
-  rl = initializeReadline();
+ let rl = initializeReadline();
   if(projectDirPath==null || projectDirPath==undefined){
     let projectDirName = await new Promise((resolve) => {
       rl.question("👉Enter the Project name [Default-project] 💁‍♂️ : ", (answer) => {

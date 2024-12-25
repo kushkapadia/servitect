@@ -1,14 +1,15 @@
-const fs = require("fs/promises")
+// const fs = require("fs/promises")
+import * as fs from "fs/promises";
+import { exit } from "process";
+import path from "path";
+import readline from "readline";
+import { exec } from "child_process";
+import mvcFileContent from "./fileContents.js";
+import { initializeReadline } from "./readlineInterface.js";
 
-const { exit } = require("process");
-const path = require("path");
-const readline = require("readline");
-const { exec } = require("child_process");
-const mvcFileContent  = require("./fileContents")
-let {initializeReadline, rl} = require("./readlineInterface")
 // initializer functions
-rl = initializeReadline()
-module.exports =  initializers = {
+let rl = initializeReadline()
+const initializers = {
     initDbConnection: async function(projectDirPath) {
         await fs.appendFile(`${projectDirPath}/db.js`, mvcFileContent.dbFileContent);
         console.log("✅ Database Config file created successfully.\n");
@@ -119,3 +120,5 @@ module.exports =  initializers = {
         console.log(`6) Remove Container: docker rm "containerName"`)
     }
 };
+
+export default initializers;

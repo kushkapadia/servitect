@@ -1,8 +1,8 @@
-const formatFile = require("./fileFormatter")
+import removeIndentation from './fileFormatter.js';
 
 // all Essential MVC File contents
 const fileContent = {
-  nodemailerFileContent: formatFile(`const nodemailer = require("nodemailer")
+  nodemailerFileContent: removeIndentation(`const nodemailer = require("nodemailer")
 require("dotenv").config()
 class Nodemailer{
     recieverEmail
@@ -47,7 +47,7 @@ class Nodemailer{
 }
 module.exports = Nodemailer
 `),
-  whatsappFileContent: formatFile(`import axios from "axios"
+  whatsappFileContent: removeIndentation(`import axios from "axios"
 require("dotenv").config()
 class WhatsappNotification {
     numberToSend;
@@ -87,7 +87,7 @@ class WhatsappNotification {
 }
 module.exports = WhatsappNotification
 `),
-  dbFileContent: formatFile(`const {MongoClient} = require('mongodb')
+  dbFileContent: removeIndentation(`const {MongoClient} = require('mongodb')
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -103,7 +103,7 @@ dotenv.config()
       app.listen(process.env.PORT)
     }
       start()`),
-  appFileContent: (routePrefix) => formatFile(`const express = require("express");
+  appFileContent: (routePrefix) => removeIndentation(`const express = require("express");
 const router = require("./router");
 const morgan = require("morgan");
 
@@ -152,7 +152,7 @@ module.exports = app;
   }
 }
 `,
-  messageFileContent: formatFile(`
+  messageFileContent: removeIndentation(`
         let Messages = function () {
 
         };
@@ -194,7 +194,7 @@ module.exports = app;
         module.exports = Messages;
         
         `),
-  JsonResponseFileContent: formatFile(`
+  JsonResponseFileContent: removeIndentation(`
         
 const HttpStatus = require("http-status-codes");
 
@@ -232,7 +232,7 @@ JsonResponse.prototype.jsonSuccess = function(data, message) {
 
   module.exports = JsonResponse
         `),
-  JWTAuthHelperFileContent: formatFile(`        
+  JWTAuthHelperFileContent: removeIndentation(`        
 const jwt = require("jsonwebtoken");
 const JsonResponse = require('./JsonResponse');
 
@@ -263,7 +263,7 @@ console.log("here")
   }
 };
         `),
-  tryCatchFileContent: formatFile(`
+  tryCatchFileContent: removeIndentation(`
 const JsonResponse = require('./JsonResponse')
 
 let  TryCatch = function(handler){
@@ -292,7 +292,7 @@ this.handler = handler
 
     module.exports = TryCatch
 `),
-  routerFileContent: formatFile(`
+  routerFileContent: removeIndentation(`
 const express = require('express');
 const router = express.Router();
 const AuthHelper = require('./helper/JWTAuthHelper');
@@ -307,7 +307,7 @@ router.get("/health-check", (req,res)=>{
   })
 module.exports = router;
 `),
-  firebaseControllerFile: formatFile(`
+  firebaseControllerFile: removeIndentation(`
 const admin = require("firebase-admin");
 const { firebase } = require("googleapis/build/src/apis/firebase");
 const JsonResponse = require("../helper/JsonResponse");
@@ -476,7 +476,7 @@ try {
 
 }
 `),
-  uploadControllerFile: formatFile(`
+  uploadControllerFile: removeIndentation(`
 const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
 const jwt = require("jsonwebtoken");
@@ -632,7 +632,7 @@ exports.deleteMultipleFiles = async function (req, res) {
 };
 
     `),
-  cloudinaryHelperFileContent: formatFile(` 
+  cloudinaryHelperFileContent: removeIndentation(` 
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const Messages = require("../constants/Message");
@@ -710,7 +710,7 @@ module.exports = {
   deleteMultipleFilesFromCloudinary,
 };
   `),
-  uploadMiddlewareFileContent: formatFile(`
+  uploadMiddlewareFileContent: removeIndentation(`
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -731,7 +731,7 @@ module.exports = upload;
   `)
   ,
 
-  nonActorControllerFileContent: (modelname) => formatFile(` 
+  nonActorControllerFileContent: (modelname) => removeIndentation(` 
 const Messages = require("../constants/Message");
   const JsonResponse = require("../helper/JsonResponse");
   const TryCatch = require("../helper/TryCatch");
@@ -765,7 +765,7 @@ await ${modelname.toLowerCase()}.deleteById()
 new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
 }
     `),
-  actorControllerFileContent: (modelname) => formatFile(` 
+  actorControllerFileContent: (modelname) => removeIndentation(` 
     const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
 const TryCatch = require("../helper/TryCatch");
@@ -873,7 +873,7 @@ exports.deleteById= async function(req, res){
  new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
 }
     `),
-  nonActorModelFileContent: (modelName, nonActorAttributes) => formatFile(`
+  nonActorModelFileContent: (modelName, nonActorAttributes) => removeIndentation(`
                 const bcrypt = require("bcryptjs");
                 const Messages = require("../constants/Message");
                 const TryCatch = require("../helper/TryCatch");
@@ -919,7 +919,7 @@ exports.deleteById= async function(req, res){
                 
                 module.exports = ${modelName};             
             `),
-  actorModelFileContent: (modelName, attributes) => formatFile(`
+  actorModelFileContent: (modelName, attributes) => removeIndentation(`
                 const bcrypt = require("bcryptjs");
                 const Messages = require("../constants/Message");
                 const TryCatch = require("../helper/TryCatch");
@@ -1007,7 +1007,7 @@ exports.deleteById= async function(req, res){
                 module.exports = ${modelName};             
             `),
 
-  chatModelFileContent: formatFile(`
+  chatModelFileContent: removeIndentation(`
     const chatsCollection = require('../db').db().collection("chats");
 
     const { ObjectId } = require('mongodb');
@@ -1055,7 +1055,7 @@ exports.deleteById= async function(req, res){
           
     module.exports = Chat
     `),
-  chatControllerFileContent: formatFile(`
+  chatControllerFileContent: removeIndentation(`
    
     const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
@@ -1077,7 +1077,7 @@ exports.getChatConvo = async function(req, res){
     
     `),
 
-  dockerFileContent: formatFile(`FROM node
+  dockerFileContent: removeIndentation(`FROM node
 
 WORKDIR /app
 
@@ -1092,4 +1092,4 @@ EXPOSE 4000
 CMD ["npm","run", "server"]`)
 };
 
-module.exports = fileContent;
+export default fileContent;
