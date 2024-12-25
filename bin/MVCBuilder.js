@@ -25,8 +25,8 @@ function displayBanner() {
     )
   );
   console.log(chalk.cyan(" 🚀 Welcome to the Project Manager CLI"));
-  // console.log(chalk.yellow(" 💼 Built with Passion by:"));
-  // console.log(chalk.magenta(" 🙋‍♂️ Devs: Kush Kapadia | Mit Shah | Atharva Jadhav"));
+  console.log(chalk.yellow(" 💼 Built with Passion by:"));
+  console.log(chalk.magenta(" 🙋‍♂️ Devs: Kush Kapadia | Mit Shah | Atharva Jadhav"));
 }
 
 // Initialize the project folder
