@@ -1,4 +1,4 @@
-const { exec } = require("child_process");
+import {exec} from 'child_process';
 
 // Function to install all dependencies in the specified directory
 const installDependencies = (dependency, dir, isDevDependency)=> {
@@ -15,4 +15,4 @@ const installDependencies = (dependency, dir, isDevDependency)=> {
     });
 };
 
-module.exports = installDependencies;
+export default installDependencies;

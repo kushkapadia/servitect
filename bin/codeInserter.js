@@ -1,5 +1,5 @@
-const fs = require("fs/promises");
 
+import * as fs from "fs/promises";
 //code inserter
 async function insertCode(
     importMarker,
@@ -40,4 +40,4 @@ async function insertCode(
     );
 }
 
-module.exports = insertCode;
+export default insertCode;
