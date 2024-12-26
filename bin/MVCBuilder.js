@@ -271,21 +271,26 @@ async function addChatInterface() {
 
   //add chat routes
   try {
-    // Read the file content
-    let data = await fs.readFile(`${projectDirPath}/router.js`, "utf8");
+    await fs.writeFile(
+      path.join(`${projectDirPath}/routes`, `chatRoutes.js`),
+      mvcFileContent.chatRouterFileContent("Chat")
+    );
+    console.log("✅ Chat Route file created successfully.\n");
 
-    const importContent = `const chatController = require('./controllers/chatController');`;
-    const routeContent = `
-    router.post('/send-chat', AuthHelper.verifyToken, new TryCatch(chatController.sendChat).tryCatchGlobe())
-    router.get('/get-my-chat/:id/:chatContactId',  AuthHelper.verifyToken, new TryCatch(chatController.getChatConvo).tryCatchGlobe())
-    `;
+    // Read the file content
+    let data = await fs.readFile(`${projectDirPath}/routes/router.js`, "utf8");
+
+    const importContent = `const chatRoutes = require("./chatRoutes");`;
+
+    const routeContent = `router.use("/chat", chatRoutes);`;
+
     const importMarker = "//imports here";
     const routeMarker = "//code here";
 
     await codeInserter(
       importMarker,
       routeMarker,
-      `${projectDirPath}/router.js`,
+      `${projectDirPath}/routes/router.js`,
       importContent,
       routeContent,
       data
@@ -298,39 +303,34 @@ async function addChatInterface() {
 
 //Uplaod Interface
 async function createFileUploadRoutes() {
-  let data = await fs.readFile(`${projectDirPath}/router.js`, "utf8");
-  const importContent = `const uploadController = require('./controllers/uploadController');\nconst upload = require('./middleware/multer');`;
-  const routeContent = `
-    // Add Single file to Cloudinary
-    router.post("/uploadSingleFile", AuthHelper.verifyToken, upload.single("image"), new TryCatch(uploadController.uploadSingleFile).tryCatchGlobe());
+  try {
+    await fs.writeFile(
+      path.join(`${projectDirPath}/routes`, `fileUploadRoutes.js`),
+      mvcFileContent.fileUploadRouterFileContent("FileUpload")
+    );
+    console.log("✅ FileUpload Route file created successfully.\n");
 
-    // Add Multiple files to cloudinary - {Array of Attachments}
-    router.post("/uploadMultipleFiles", AuthHelper.verifyToken, upload.array("attachments"), new TryCatch(uploadController.uploadMultipleFiles).tryCatchGlobe());
+    // Read the file content
+    let data = await fs.readFile(`${projectDirPath}/routes/router.js`, "utf8");
 
-    // Add files according to fields to cloudinary
-    // [
-    //   { name: 'avatar', maxCount: 1 },
-    //   { name: 'gallery', maxCount: 8 }
-    // ]
-    router.post("/uploadFiles",AuthHelper.verifyToken,upload.fields([{name: "userImage"},{name: "coverPhoto",}]),new TryCatch(uploadController.uploadFiles).tryCatchGlobe());
+    const importContent = `const fileUploadRoutes = require("./fileUploadRoutes");`;
 
-    // Delete Single file from cloudinary
-    router.post("/deleteSingleFile", AuthHelper.verifyToken, new TryCatch(uploadController.deleteSingleFile).tryCatchGlobe());
+    const routeContent = `router.use("/fileUpload", fileUploadRoutes);`;
 
-    // Delete Multiple files from cloudinary - {Array of Public Ids}
-    router.post("/deleteMultipleFiles", AuthHelper.verifyToken, new TryCatch(uploadController.deleteMultipleFiles).tryCatchGlobe());
-    `;
-  const importMarker = "//imports here";
-  const routeMarker = "//code here";
+    const importMarker = "//imports here";
+    const routeMarker = "//code here";
 
-  await codeInserter(
-    importMarker,
-    routeMarker,
-    `${projectDirPath}/router.js`,
-    importContent,
-    routeContent,
-    data
-  );
+    await codeInserter(
+      importMarker,
+      routeMarker,
+      `${projectDirPath}/routes/router.js`,
+      importContent,
+      routeContent,
+      data
+    );
+  } catch (err) {
+    console.error(`❌ Error: ${err.message}`);
+  }
 }
 
 async function addFileUpload() {
@@ -393,34 +393,32 @@ async function addFileUpload() {
 }
 
 async function createFirebaseRoutes() {
-  let data = await fs.readFile(`${projectDirPath}/router.js`, "utf8");
+  try {
+    await fs.writeFile(
+      path.join(`${projectDirPath}/routes`, `firebaseRoutes.js`),
+      mvcFileContent.firebaseRouterFileContent("Firebase")
+    );
+    console.log("✅ Firebase Route file created successfully.\n");
+    let data = await fs.readFile(`${projectDirPath}/routes/router.js`, "utf8");
 
-  const importContent = `const firebaseController = require("./controllers/firebaseController")`;
-  const routeContent = `//Firebase Push Notification Routes - Start
-router.post("/firebase/sendNotificationToCustomDevice", AuthHelper.verifyToken,
-    new TryCatch(firebaseController.sendNotificationToCustomDevice).tryCatchGlobe());
+    const importContent = `const firebaseRoutes = require("./firebaseRoutes");`;
 
-router.post("/firebase/sendNotificationToTopic/:topic", AuthHelper.verifyToken, 
-    new TryCatch(firebaseController.sendNotificationToTopic).tryCatchGlobe());
+    const routeContent = `router.use("/firebase", firebaseRoutes);`;
 
-router.post("/firebase/sendBatchNotificationsMultipleFCMS", AuthHelper.verifyToken,
-    new TryCatch(firebaseController.sendBatchNotificationsMultipleFCMS).tryCatchGlobe());
+    const importMarker = "//imports here";
+    const routeMarker = "//code here";
 
-router.post("/firebase/sendNotificationsToMultipleTopics", AuthHelper.verifyToken,
-    new TryCatch(firebaseController.sendNotificationsToMultipleTopics).tryCatchGlobe());
-//Firebase Push Notification Routes - End
-`;
-  const importMarker = "//imports here";
-  const routeMarker = "//code here";
-
-  await codeInserter(
-    importMarker,
-    routeMarker,
-    `${projectDirPath}/router.js`,
-    importContent,
-    routeContent,
-    data
-  );
+    await codeInserter(
+      importMarker,
+      routeMarker,
+      `${projectDirPath}/routes/router.js`,
+      importContent,
+      routeContent,
+      data
+    );
+  } catch (err) {
+    console.error(`❌ Error: ${err.message}`);
+  }
 }
 
 async function addFirebaseFCM() {

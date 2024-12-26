@@ -365,6 +365,91 @@ module.exports = router;
 
       module.exports = router; 
   `),
+  chatRouterFileContent: (modelName) =>
+    removeIndentation(`
+      const express = require('express');
+      const router = express.Router();
+      const AuthHelper = require('../helper/JWTAuthHelper');
+      const TryCatch = require('../helper/TryCatch');
+      const Messages = require('../constants/Message');
+      const chatController = require('../controllers/chatController');  
+
+      //imports here
+
+      //code here
+
+      //Entity - ${modelName} --start
+      router.post('/send-chat', AuthHelper.verifyToken, new TryCatch(chatController.sendChat).tryCatchGlobe());
+      router.get('/get-my-chat/:id/:chatContactId',  AuthHelper.verifyToken, new TryCatch(chatController.getChatConvo).tryCatchGlobe());
+      //Entity - ${modelName} - End
+
+      module.exports = router;
+    `),
+  fileUploadRouterFileContent: (modelName) =>
+    removeIndentation(`
+      const express = require('express');
+      const router = express.Router();
+      const AuthHelper = require('../helper/JWTAuthHelper');
+      const TryCatch = require('../helper/TryCatch');
+      const Messages = require('../constants/Message');
+      const uploadController = require('../controllers/uploadController'); 
+      const upload = require('../middleware/multer');
+
+      //imports here
+
+      //code here
+
+      //Entity - ${modelName} --start
+      // Add Single file to Cloudinary
+      router.post("/uploadSingleFile", AuthHelper.verifyToken, upload.single("image"), new TryCatch(uploadController.uploadSingleFile).tryCatchGlobe());
+
+      // Add Multiple files to cloudinary - {Array of Attachments}
+      router.post("/uploadMultipleFiles", AuthHelper.verifyToken, upload.array("attachments"), new TryCatch(uploadController.uploadMultipleFiles).tryCatchGlobe());
+
+      // Add files according to fields to cloudinary
+      // [
+      //   { name: 'avatar', maxCount: 1 },
+      //   { name: 'gallery', maxCount: 8 }
+      // ]
+      router.post("/uploadFiles",AuthHelper.verifyToken,upload.fields([{name: "userImage"},{name: "coverPhoto",}]),new TryCatch(uploadController.uploadFiles).tryCatchGlobe());
+
+      // Delete Single file from cloudinary
+      router.post("/deleteSingleFile", AuthHelper.verifyToken, new TryCatch(uploadController.deleteSingleFile).tryCatchGlobe());
+
+      // Delete Multiple files from cloudinary - {Array of Public Ids}
+      router.post("/deleteMultipleFiles", AuthHelper.verifyToken, new TryCatch(uploadController.deleteMultipleFiles).tryCatchGlobe());
+      //Entity - ${modelName} - End
+
+      module.exports = router;
+    `),
+  firebaseRouterFileContent: (modelName) =>
+    removeIndentation(`
+        const express = require('express');
+        const router = express.Router();
+        const AuthHelper = require('../helper/JWTAuthHelper');
+        const TryCatch = require('../helper/TryCatch');
+        const Messages = require('../constants/Message');
+        const firebaseController = require("../controllers/firebaseController")  
+
+        //imports here
+
+        //code here
+        //Firebase Push Notification Routes - Start
+        router.post("/sendNotificationToCustomDevice", AuthHelper.verifyToken,
+            new TryCatch(firebaseController.sendNotificationToCustomDevice).tryCatchGlobe());
+
+        router.post("/sendNotificationToTopic/:topic", AuthHelper.verifyToken, 
+            new TryCatch(firebaseController.sendNotificationToTopic).tryCatchGlobe());
+
+        router.post("/sendBatchNotificationsMultipleFCMS", AuthHelper.verifyToken,
+            new TryCatch(firebaseController.sendBatchNotificationsMultipleFCMS).tryCatchGlobe());
+
+        router.post("/sendNotificationsToMultipleTopics", AuthHelper.verifyToken,
+            new TryCatch(firebaseController.sendNotificationsToMultipleTopics).tryCatchGlobe());
+        //Firebase Push Notification Routes - End
+
+        module.exports = router;
+      `),
   firebaseControllerFile: removeIndentation(`
 const admin = require("firebase-admin");
 const { firebase } = require("googleapis/build/src/apis/firebase");
