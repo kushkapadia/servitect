@@ -24,5 +24,7 @@
     "url": "https://github.com/kushkapadia/MVCGenerator/issues"
   },
   "homepage": "https://github.com/kushkapadia/MVCGenerator#readme",
-  "dependencies": {}
+  "dependencies": {
+    "servitect": "file:"
+  }
 }
