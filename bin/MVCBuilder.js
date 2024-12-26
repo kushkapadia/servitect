@@ -13,7 +13,8 @@ import mvcInitializers from "./mvcInitializers.js";
 
 import dependencyInstaller from "./dependencyInstaller.js";
 import codeInserter from "./codeInserter.js";
-import { initializeReadline } from './readlineInterface.js';
+import { initializeReadline } from "./readlineInterface.js";
+import fileContent from "./fileContents.js";
 
 let content = "";
 let attributes = "";
@@ -21,23 +22,23 @@ let nonActorAttributes = "";
 let actorModelFileContent = "";
 let ModelFileContent = "";
 
-
 let rl = initializeReadline();
 //Initial Initializing
 async function initialize() {
   try {
-    // let projectDirName = await new Promise((resolve) => {
-    //   rl.question("👉Enter the Project name [Default-project] 💁‍♂️ : ", (answer) => {
-    //     resolve(answer);
-    //   });
-    // });
-    //  projectDirPath = path.join(__dirname, projectDirName==null || projectDirName=='' ? "project" : projectDirName);
-    // await fs.mkdir(projectDirPath, { recursive: true });
     console.log("✅ Project folder created successfully.");
     mvcInitializers.initPackageFile(projectDirPath);
     console.log("📦 Installing Packages...");
-    await dependencyInstaller(dependencyUtil.DEPENDENCY_LIST, projectDirPath, false);
-    await dependencyInstaller(dependencyUtil.DEV_DEPENDENCY_LIST, projectDirPath, true);
+    await dependencyInstaller(
+      dependencyUtil.DEPENDENCY_LIST,
+      projectDirPath,
+      false
+    );
+    await dependencyInstaller(
+      dependencyUtil.DEV_DEPENDENCY_LIST,
+      projectDirPath,
+      true
+    );
     console.log("✅ Installation Successfull...");
     await mvcInitializers.initMainAppFile(projectDirPath);
     await mvcInitializers.initDbConnection(projectDirPath);
@@ -86,17 +87,23 @@ async function askForAttributes(modelName) {
         });
         break;
       case "no":
-        actorModelFileContent += mvcFileContent.actorModelFileContent(modelName, attributes);
+        actorModelFileContent += mvcFileContent.actorModelFileContent(
+          modelName,
+          attributes
+        );
 
         await createActorControllerfile(modelName);
 
+        // By Atharva
         await addActorRoutes(modelName);
+
+        // await addActorRoutes(modelName);
         await fs.appendFile(
           `${projectDirPath}/models/${modelName}.js`,
           `${actorModelFileContent}`
         );
         console.log("✅ Model File Created Successfully!\n");
-        
+
         // rl.close();
         menu();
         break;
@@ -139,8 +146,12 @@ async function askForNonActorAttributes(modelName) {
         );
 
         await addNonActorRoutes(modelName);
+
         await createNonActorController(modelName);
-        await fs.appendFile(`${projectDirPath}/models/${modelName}.js`, `${ModelFileContent}`);
+        await fs.appendFile(
+          `${projectDirPath}/models/${modelName}.js`,
+          `${ModelFileContent}`
+        );
 
         console.log("✅ Model File created successfully!");
 
@@ -172,36 +183,33 @@ async function createNonActorController(modelname) {
 
 async function addActorRoutes(modelName) {
   try {
-    // Read the file content
-    let data = await fs.readFile(`${projectDirPath}/router.js`, "utf8");
+    // Create the folder in routes
+    // Create file
+    await fs.writeFile(
+      path.join(
+        `${projectDirPath}/routes`,
+        `${modelName.toLowerCase()}Routes.js`
+      ),
+      mvcFileContent.actorRouterFileContent(modelName)
+    );
+    console.log("✅ Actor Router file created successfully.\n");
 
-    // Content to append
-    const importContent = `const ${modelName.toLowerCase()}Controller = require('./controllers/${modelName.toLowerCase()}Controller');
-`;
+    const data = await fs.readFile(
+      `${projectDirPath}/routes/router.js`,
+      "utf8"
+    );
 
-    const routeContent = `
-//Entity - ${modelName} --start
-//Authentication - ${modelName}
-router.post('/register-${modelName.toLowerCase()}', new TryCatch(${modelName.toLowerCase()}Controller.apiRegister).tryCatchGlobe());
-router.post('/login-${modelName.toLowerCase()}', new TryCatch(${modelName.toLowerCase()}Controller.apiLogin).tryCatchGlobe());
+    const importContent = `const ${modelName.toLowerCase()}Routes = require("./${modelName.toLowerCase()}Routes");`;
 
-//CRUD Operations - ${modelName}
-router.post('/${modelName.toLowerCase()}/does-email-exists', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.doesEmailExist).tryCatchGlobe());
-router.get('/${modelName.toLowerCase()}/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
-router.get('/${modelName.toLowerCase()}/get-by-email/:email', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getByEmail).tryCatchGlobe());
-router.get('/${modelName.toLowerCase()}/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
-router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
-//Entity - ${modelName} - End
-`;
+    const routeContent = `router.use("/${modelName.toLowerCase()}", ${modelName.toLowerCase()}Routes);`;
 
-    // Define marker comments
     const importMarker = "//imports here";
     const routeMarker = "//code here";
 
     await codeInserter(
       importMarker,
       routeMarker,
-      `${projectDirPath}/router.js`,
+      `${projectDirPath}/routes/router.js`,
       importContent,
       routeContent,
       data
@@ -213,31 +221,33 @@ router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyT
 
 async function addNonActorRoutes(modelName) {
   try {
-    // Read the file content
-    let data = await fs.readFile(`${projectDirPath}/router.js`, "utf8");
+    // Create the folder in routes
+    // Create file
+    await fs.writeFile(
+      path.join(
+        `${projectDirPath}/routes`,
+        `${modelName.toLowerCase()}Routes.js`
+      ),
+      mvcFileContent.nonActorRouterFileContent(modelName)
+    );
+    console.log("✅ Non Actor Router file created successfully.\n");
 
-    // Content to append
-    const importContent = `const ${modelName.toLowerCase()}Controller = require('./controllers/${modelName.toLowerCase()}Controller');
-`;
+    const data = await fs.readFile(
+      `${projectDirPath}/routes/router.js`,
+      "utf8"
+    );
 
-    const routeContent = `
-//Entity - ${modelName} --start
+    const importContent = `const ${modelName.toLowerCase()}Routes = require("./${modelName.toLowerCase()}Routes");`;
 
-//CRUD Operations - ${modelName}
-router.post('/${modelName.toLowerCase()}/create', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.create${modelName}).tryCatchGlobe());
-router.get('/${modelName.toLowerCase()}/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
-router.get('/${modelName.toLowerCase()}/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
-router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
-//Entity - ${modelName} - End
-`;
+    const routeContent = `router.use("/${modelName.toLowerCase()}", ${modelName.toLowerCase()}Routes);`;
 
-    // Define marker comments
     const importMarker = "//imports here";
     const routeMarker = "//code here";
+
     await codeInserter(
       importMarker,
       routeMarker,
-      `${projectDirPath}/router.js`,
+      `${projectDirPath}/routes/router.js`,
       importContent,
       routeContent,
       data
@@ -249,7 +259,10 @@ router.delete('/${modelName.toLowerCase()}/delete-by-id/:id', AuthHelper.verifyT
 
 //CHAT INTERFACE
 async function addChatInterface() {
-  await fs.appendFile(`${projectDirPath}/models/Chat.js`, mvcFileContent.chatModelFileContent);
+  await fs.appendFile(
+    `${projectDirPath}/models/Chat.js`,
+    mvcFileContent.chatModelFileContent
+  );
 
   await fs.appendFile(
     `${projectDirPath}/controllers/chatController.js`,
@@ -283,13 +296,11 @@ async function addChatInterface() {
   }
 }
 
-
-
 //Uplaod Interface
 async function createFileUploadRoutes() {
   let data = await fs.readFile(`${projectDirPath}/router.js`, "utf8");
-    const importContent = `const uploadController = require('./controllers/uploadController');\nconst upload = require('./middleware/multer');`;
-    const routeContent = `
+  const importContent = `const uploadController = require('./controllers/uploadController');\nconst upload = require('./middleware/multer');`;
+  const routeContent = `
     // Add Single file to Cloudinary
     router.post("/uploadSingleFile", AuthHelper.verifyToken, upload.single("image"), new TryCatch(uploadController.uploadSingleFile).tryCatchGlobe());
 
@@ -309,17 +320,17 @@ async function createFileUploadRoutes() {
     // Delete Multiple files from cloudinary - {Array of Public Ids}
     router.post("/deleteMultipleFiles", AuthHelper.verifyToken, new TryCatch(uploadController.deleteMultipleFiles).tryCatchGlobe());
     `;
-    const importMarker = "//imports here";
-    const routeMarker = "//code here";
+  const importMarker = "//imports here";
+  const routeMarker = "//code here";
 
-    await codeInserter(
-      importMarker,
-      routeMarker,
-      `${projectDirPath}/router.js`,
-      importContent,
-      routeContent,
-      data
-    );
+  await codeInserter(
+    importMarker,
+    routeMarker,
+    `${projectDirPath}/router.js`,
+    importContent,
+    routeContent,
+    data
+  );
 }
 
 async function addFileUpload() {
@@ -354,11 +365,17 @@ async function addFileUpload() {
   await createFileUploadRoutes();
 
   // Adding the middleware and the helper file
-  await fs.appendFile(`${projectDirPath}/helper/cloudinary.js`, mvcFileContent.cloudinaryHelperFileContent);
+  await fs.appendFile(
+    `${projectDirPath}/helper/cloudinary.js`,
+    mvcFileContent.cloudinaryHelperFileContent
+  );
 
   const middlewareDir = path.join(projectDirPath, "middleware");
   await fs.mkdir(middlewareDir, { recursive: true });
-  await fs.appendFile(`${projectDirPath}/middleware/multer.js`, mvcFileContent.uploadMiddlewareFileContent);
+  await fs.appendFile(
+    `${projectDirPath}/middleware/multer.js`,
+    mvcFileContent.uploadMiddlewareFileContent
+  );
 
   // Adding upload Controller
   await fs.appendFile(
@@ -374,8 +391,6 @@ async function addFileUpload() {
 
   menu();
 }
-
-
 
 async function createFirebaseRoutes() {
   let data = await fs.readFile(`${projectDirPath}/router.js`, "utf8");
@@ -411,7 +426,11 @@ router.post("/firebase/sendNotificationsToMultipleTopics", AuthHelper.verifyToke
 async function addFirebaseFCM() {
   console.log("📦 Installing Packages...");
 
-  await dependencyInstaller("firebase-admin google-auth-library googleapis", projectDirPath, false);
+  await dependencyInstaller(
+    "firebase-admin google-auth-library googleapis",
+    projectDirPath,
+    false
+  );
   console.log("📦 Installation Complete...");
 
   const PROJECT_ID = await new Promise((resolve) => {
@@ -468,8 +487,6 @@ async function addFirebaseFCM() {
   menu();
 }
 
-
-
 async function addWhatsapp() {
   console.log("📦 Installing Axios...");
   await dependencyInstaller("axios", projectDirPath, false);
@@ -509,7 +526,7 @@ async function addNodemailer() {
 }
 async function addDocker() {
   console.log("📦 Initializing Docker Setup...");
-  await mvcInitializers.initDocker(projectDirPath)
+  await mvcInitializers.initDocker(projectDirPath);
 
   console.log(`✅ Docker Setup Completed.\n`);
 
@@ -529,16 +546,23 @@ async function menu() {
   console.log("10. ❌ Quit");
   console.log("===============================\n");
 
- let rl = initializeReadline();
-  if(projectDirPath==null || projectDirPath==undefined){
+  let rl = initializeReadline();
+  if (projectDirPath == null || projectDirPath == undefined) {
     let projectDirName = await new Promise((resolve) => {
-      rl.question("👉Enter the Project name [Default-project] 💁‍♂️ : ", (answer) => {
-        resolve(answer);
-      });
+      rl.question(
+        "👉Enter the Project name [Default-project] 💁‍♂️ : ",
+        (answer) => {
+          resolve(answer);
+        }
+      );
     });
-    projectDirPath = path.join(process.cwd(), projectDirName == null || projectDirName == '' ? "project" : projectDirName);
+    projectDirPath = path.join(
+      process.cwd(),
+      projectDirName == null || projectDirName == ""
+        ? "project"
+        : projectDirName
+    );
     await fs.mkdir(projectDirPath, { recursive: true });
-
   }
   rl.question("What would you like to work upon today?: ", async (answer) => {
     console.log(`👉 You entered: ${answer}\n`);
