@@ -135,7 +135,9 @@ app.use(cors());
 module.exports = app;
 `),
   envFileContent: (PORT, CONNECTION_STRING) =>
-    `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
+    `PORT=${
+      !PORT || isNaN(PORT) || PORT < 1 || PORT > 65535 ? "4000" : PORT
+    }\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
   gitIgnoreFileContent: `/node_modules\n.env`,
   packageJsonFileContent: `{
   "name": "backend",
@@ -364,6 +366,7 @@ module.exports = router;
       router.get('/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
       router.get('/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
       router.delete('/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
+      router.post("/update-by-id/:id", AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.updateById).tryCatchGlobe());
       //Entity - ${modelName} - End
 
       module.exports = router; 
@@ -896,6 +899,11 @@ new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messag
 
 }
 
+exports.updateById = async function (req, res) {
+  let ${modelname.toLowerCase()} = new ${modelname}();
+  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.updateById(req.params.id, req.body);
+  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_UPDATED);
+};
 
 exports.getAll${modelname}s = async function (req, res) {
   let ${modelname.toLowerCase()} = new ${modelname} ()
@@ -1066,6 +1074,23 @@ exports.deleteById= async function(req, res){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({_id: new ObjectId(id)})
                   return ${modelName.toLowerCase()}Doc
                 }
+
+                ${modelName}.prototype.updateById = async function (id, data) {
+                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOneAndUpdate(
+                    { _id: new ObjectId(id) },
+                    {
+                      $set: {
+                        ...data,
+                        updatedAt: new Date(),
+                      },
+                    },
+                    {
+                      returnDocument: "after",
+                    }
+                  );
+
+                  return ${modelName.toLowerCase()}Doc;
+                };
                 
                 ${modelName}.prototype.getAll${modelName}s = async function (){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.find({}).toArray()
@@ -1167,6 +1192,7 @@ exports.deleteById= async function(req, res){
                         address: data.address,
                         city: data.city,
                         role: "${modelName.toLowerCase()}",
+                        updatedAt: new Date(),
                       },
                     },
                     { returnDocument: "after" }
@@ -1186,6 +1212,7 @@ exports.deleteById= async function(req, res){
                         address: data.address,
                         city: data.city,
                         role: "${modelName.toLowerCase()}",
+                        updatedAt: new Date(),
                       },
                     },
                     { returnDocument: "after" }
