@@ -135,7 +135,9 @@ app.use(cors());
 module.exports = app;
 `),
   envFileContent: (PORT, CONNECTION_STRING) =>
-    `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
+    `PORT=${
+      !PORT || isNaN(PORT) || PORT < 1 || PORT > 65535 ? "4000" : PORT
+    }\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
   gitIgnoreFileContent: `/node_modules\n.env`,
   packageJsonFileContent: `{
   "name": "backend",
@@ -173,6 +175,7 @@ module.exports = app;
         Messages.prototype.CREATE_FAILED = "Failed to Create New Entry";
         Messages.prototype.SUCCESSFULLY_DELETED = "Data successfully deleted";
         Messages.prototype.SUCCESSFULLY_RECORD_DELETED = "Data successfully deleted";
+        Messages.prototype.SUCCESSFULLY_UPDATED = "Data successfully updated";
         
           //JWT Messages
           Messages.prototype.TOKEN_ERROR = "Token not generated.";
@@ -338,6 +341,8 @@ module.exports = router;
       router.get('/get-by-email/:email', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getByEmail).tryCatchGlobe());
       router.get('/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
       router.delete('/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
+      router.post("/update-by-id/:id", AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.updateById).tryCatchGlobe());
+      router.post("/update-by-email/:email", new TryCatch(${modelName.toLowerCase()}Controller.updateByEmail).tryCatchGlobe());
       //Entity - ${modelName} - End
 
       module.exports = router;
@@ -361,6 +366,7 @@ module.exports = router;
       router.get('/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
       router.get('/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
       router.delete('/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
+      router.post("/update-by-id/:id", AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.updateById).tryCatchGlobe());
       //Entity - ${modelName} - End
 
       module.exports = router; 
@@ -893,6 +899,11 @@ new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messag
 
 }
 
+exports.updateById = async function (req, res) {
+  let ${modelname.toLowerCase()} = new ${modelname}();
+  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.updateById(req.params.id, req.body);
+  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_UPDATED);
+};
 
 exports.getAll${modelname}s = async function (req, res) {
   let ${modelname.toLowerCase()} = new ${modelname} ()
@@ -1003,6 +1014,19 @@ exports.getByEmail = async function(req, res){
   new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_RECEIVED)
 }
 
+exports.updateById = async function (req, res) {
+  let ${modelname.toLowerCase()} = new ${modelname}();
+  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.updateById(req.params.id, req.body);
+  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_UPDATED);
+};
+
+exports.updateByEmail = async function (req, res) {
+  let ${modelname.toLowerCase()} = new ${modelname}();
+  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.updateByEmail(req.params.email, req.body);
+  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_UPDATED);
+};
+
+
 exports.getAll${modelname}s = async function(req, res){
   let ${modelname.toLowerCase()} = new ${modelname}()
   let ${modelname.toLowerCase()}s = await ${modelname.toLowerCase()}.getAll${modelname}s()
@@ -1050,6 +1074,23 @@ exports.deleteById= async function(req, res){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({_id: new ObjectId(id)})
                   return ${modelName.toLowerCase()}Doc
                 }
+
+                ${modelName}.prototype.updateById = async function (id, data) {
+                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOneAndUpdate(
+                    { _id: new ObjectId(id) },
+                    {
+                      $set: {
+                        ...data,
+                        updatedAt: new Date(),
+                      },
+                    },
+                    {
+                      returnDocument: "after",
+                    }
+                  );
+
+                  return ${modelName.toLowerCase()}Doc;
+                };
                 
                 ${modelName}.prototype.getAll${modelName}s = async function (){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.find({}).toArray()
@@ -1138,6 +1179,47 @@ exports.deleteById= async function(req, res){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({_id: new ObjectId(id)})
                   return ${modelName.toLowerCase()}Doc
                 }
+
+                ${modelName}.prototype.updateById = async function (id, data) {
+                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOneAndUpdate(
+                    { _id: new ObjectId(id) },
+                    {
+                      $set: {
+                        name: data.name,
+                        lName: data.lName,
+                        email: data.email,
+                        contactNumber: data.contactNumber,
+                        address: data.address,
+                        city: data.city,
+                        role: "${modelName.toLowerCase()}",
+                        updatedAt: new Date(),
+                      },
+                    },
+                    { returnDocument: "after" }
+                  );
+                  return ${modelName.toLowerCase()}Doc;
+                };
+
+                ${modelName}.prototype.updateByEmail = async function (email, data) {
+                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOneAndUpdate(
+                    { email: email },
+                    {
+                      $set: {
+                        name: data.name,
+                        lName: data.lName,
+                        email: data.email,
+                        contactNumber: data.contactNumber,
+                        address: data.address,
+                        city: data.city,
+                        role: "${modelName.toLowerCase()}",
+                        updatedAt: new Date(),
+                      },
+                    },
+                    { returnDocument: "after" }
+                  );
+                  return ${modelName.toLowerCase()}Doc;
+                };
+
                 
                 ${modelName}.prototype.getAll${modelName}s = async function (){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.find({}).toArray()
