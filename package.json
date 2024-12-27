@@ -25,6 +25,9 @@
   },
   "homepage": "https://github.com/kushkapadia/MVCGenerator#readme",
   "dependencies": {
-    "servitect": "file:"
+    "@inquirer/prompts": "^7.2.1",
+    "chalk": "^5.4.1",
+    "inquirer-file-selector": "^0.6.1",
+    "terminal-link": "^3.0.0"
   }
 }

@@ -6,7 +6,8 @@ import readline from "readline";
 import { exec } from "child_process";
 import mvcFileContent from "./fileContents.js";
 import { initializeReadline } from "./readlineInterface.js";
-
+import { input, number } from '@inquirer/prompts';
+import chalk from "chalk";
 // initializer functions
 let rl = initializeReadline();
 const initializers = {
@@ -18,18 +19,20 @@ const initializers = {
     console.log("✅ Database Config file created successfully.\n");
   },
   initMainAppFile: async function (projectDirPath) {
-    let routePrefix = await new Promise((resolve) => {
-      rl.question(
-        "👉 Enter the route prefix (e.g., /sample) 💁‍♂️: ",
-        (answer) => {
-          resolve(answer.trim());
-        }
-      );
-    });
 
+    let routePrefix = await input({
+      message: 'Enter the route prefix:',
+      default: "/",
+    });
+    routePrefix = routePrefix.trim();
     const isValidRoute = /^\/[a-zA-Z0-9-_]*$/.test(routePrefix);
 
     if (!isValidRoute || !routePrefix) {
+      console.log(
+        chalk.red(
+          "❌ Invalid route prefix entered. Using Default Route Prefix."
+        )
+      );
       routePrefix = "/";
     }
 
@@ -40,22 +43,14 @@ const initializers = {
     console.log("✅ App.js file created successfully.\n");
   },
   initEnv: async function (projectDirPath) {
-    const PORT = await new Promise((resolve) => {
-      rl.question("👉Enter the Port [Default-4000] 💁‍♂️ : ", (answer) => {
-        resolve(answer);
-      });
-    });
-    const CONNECTION_STRING = await new Promise((resolve) => {
-      rl.question("👉Enter the Connection String 💁‍♂️ : ", (answer) => {
-        resolve(answer);
-      });
-    });
+ 
+    const PORT = await number({ message: 'Enter port number you want to use:', default: 4000, min:1024, max: 65535 });
 
+    const CONNECTION_STRING = await input({ message: 'Enter the mongodb connection string:', default: "" });
     await fs.appendFile(
       `${projectDirPath}/.env`,
       mvcFileContent.envFileContent(PORT, CONNECTION_STRING)
     );
-
     console.log("✅ Env file created successfully.\n");
   },
 
