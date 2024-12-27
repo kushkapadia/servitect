@@ -10,12 +10,15 @@ let projectDirPath;
 import * as fs from "fs/promises";
 import { exit } from "process";
 import mvcInitializers from "./mvcInitializers.js";
-
+import displayHeader from "./header/header.js";
 import dependencyInstaller from "./dependencyInstaller.js";
 import codeInserter from "./codeInserter.js";
 import { initializeReadline } from "./readlineInterface.js";
 import fileContent from "./fileContents.js";
-
+import promptUser from "./prompts/menuPrompt.js";
+import fileSelector from 'inquirer-file-selector'
+import { input } from '@inquirer/prompts';
+import chalk from "chalk";
 let content = "";
 let attributes = "";
 let nonActorAttributes = "";
@@ -47,8 +50,8 @@ async function initialize() {
     await mvcInitializers.initConstants(projectDirPath);
     await mvcInitializers.initHelpers(projectDirPath);
     await mvcInitializers.initMVC(projectDirPath);
-    // rl.close();
     menu();
+    
   } catch (err) {
     console.error("❌ Error during initialization2:", err.message);
   }
@@ -531,40 +534,27 @@ async function addDocker() {
   menu();
 }
 async function menu() {
-  console.log("==============MENU=============");
-  console.log("1. 📁 Initialize");
-  console.log("2. 🛠️ Create new ACTOR Model");
-  console.log("3. 📝 Create New Model");
-  console.log("4. 💬 Add Chat Interface");
-  console.log("5. 🔼 Add File Upload Feature");
-  console.log("6. 🔔 Firebase Push Notifications");
-  console.log("7. 🟢 Add Whatsapp Notifications");
-  console.log("8. 🗒️ Add Nodemailer");
-  console.log("9. 🗄️ Add Docker Setup");
-  console.log("10. ❌ Quit");
-  console.log("===============================\n");
+ 
 
-  let rl = initializeReadline();
-  if (projectDirPath == null || projectDirPath == undefined) {
-    let projectDirName = await new Promise((resolve) => {
-      rl.question(
-        "👉Enter the Project name [Default-project] 💁‍♂️ : ",
-        (answer) => {
-          resolve(answer);
-        }
-      );
-    });
-    projectDirPath = path.join(
-      process.cwd(),
-      projectDirName == null || projectDirName == ""
-        ? "project"
-        : projectDirName
-    );
-    await fs.mkdir(projectDirPath, { recursive: true });
-  }
-  rl.question("What would you like to work upon today?: ", async (answer) => {
-    console.log(`👉 You entered: ${answer}\n`);
+if(projectDirPath == null || projectDirPath == undefined){
+   projectDirPath = await fileSelector({
+    message: 'Select a directory to create project inside of:',
+    type: "directory",
+    filter: (file) => {
+      return file.isDirectory()
+    }
+  })
+  const projectName = await input({
+    message: 'Enter the project name:'
+    , default: "myNodeProject"
+  });
+  projectDirPath = path.join(
+    projectDirPath, projectName
+  );
+  await fs.mkdir(projectDirPath, { recursive: true });
+}
 
+  let answer = await promptUser();
     switch (answer) {
       case "1":
         try {
@@ -641,12 +631,8 @@ async function menu() {
         menu();
         break;
     }
-  });
+
 }
 
-console.log("\n===============================");
-console.log("       🚀 Welcome to the        ");
-console.log("     💼 Project Manager CLI     ");
-console.log(" 🙋‍♂️ Dev: Kush Kapadia | Mit Shah | Atharva Jadhav  ");
-console.log("===============================\n");
+displayHeader()
 menu();
