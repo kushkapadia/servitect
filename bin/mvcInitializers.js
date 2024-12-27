@@ -17,18 +17,22 @@ const initializers = {
     );
     console.log("✅ Database Config file created successfully.\n");
   },
-
   initMainAppFile: async function (projectDirPath) {
     let routePrefix = await new Promise((resolve) => {
-      rl.question("👉Enter the route prefix (Eg - /sample) 💁‍♂️ : ", (answer) => {
-        resolve(answer);
-      });
+      rl.question(
+        "👉 Enter the route prefix (e.g., /sample) 💁‍♂️: ",
+        (answer) => {
+          resolve(answer.trim());
+        }
+      );
     });
 
-    const regExp = /^.*$/;
-    if (regExp.test(routePrefix) || routePrefix == null) {
+    const isValidRoute = /^\/[a-zA-Z0-9-_]*$/.test(routePrefix);
+
+    if (!isValidRoute || !routePrefix) {
       routePrefix = "/";
     }
+
     await fs.appendFile(
       `${projectDirPath}/app.js`,
       mvcFileContent.appFileContent(routePrefix)
