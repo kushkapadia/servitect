@@ -34,9 +34,6 @@ async function insertCode(
 
   // Write the modified content back to the file
   await fs.writeFile(filePath, data, "utf8");
-  console.log(
-    `✅ Content appended below the markers "${importMarker}" and "${routeMarker}" successfully!`
-  );
 }
 
 export default insertCode;
