@@ -29,12 +29,14 @@
     "ansi-colors": "^4.1.3",
     "ansi-styles": "^6.2.1",
     "boxen": "^8.0.1",
-    "axios": "^1.7.9",
     "chalk": "^5.4.1",
     "figlet": "^1.8.0",
     "figures": "^6.1.0",
     "gradient-string": "^3.0.0",
     "inquirer-file-selector": "^0.6.1",
+    "ora": "^8.1.1",
+    "progress": "^2.0.3",
+    "servitect": "file:",
     "terminal-link": "^3.0.0"
   }
 }
