@@ -16,8 +16,9 @@ import codeInserter from "./codeInserter.js";
 import { initializeReadline } from "./readlineInterface.js";
 import fileContent from "./fileContents.js";
 import promptUser from "./prompts/menuPrompt.js";
-import fileSelector from 'inquirer-file-selector'
-import { input } from '@inquirer/prompts';
+import fileSelector from "inquirer-file-selector";
+import { input } from "@inquirer/prompts";
+import { confirm } from "@inquirer/prompts";
 import chalk from "chalk";
 let content = "";
 let attributes = "";
@@ -51,7 +52,6 @@ async function initialize() {
     await mvcInitializers.initHelpers(projectDirPath);
     await mvcInitializers.initMVC(projectDirPath);
     menu();
-    
   } catch (err) {
     console.error("❌ Error during initialization2:", err.message);
   }
@@ -63,16 +63,27 @@ async function createActorModel() {
     attributes = "";
     actorModelFileContent = "";
     ModelFileContent = "";
-    const modelName = await new Promise((resolve) => {
-      rl.question(
-        "👉Enter the Name of the 💁‍♂️ *ACTOR MODEL* [First Letter Cap] : ",
-        (answer) => {
-          resolve(answer);
-        }
-      );
+    let modelName = await input({
+      message: "👉 Enter the Name of the 💁‍♂️ *ACTOR MODEL* [First Letter Cap]:",
     });
 
-    // modelNameGlob = modelName;
+    if (modelName.length === 0 || modelName.trim() === "") {
+      console.log(chalk.red("❌ Model name cannot be empty."));
+      await createActorModel();
+    }
+
+    if (modelName.charAt(0) !== modelName.charAt(0).toUpperCase()) {
+      console.log(
+        chalk.red(
+          `❌ Model name should start with a capital letter. Using model name as `
+        ) +
+          chalk.green(
+            `${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`
+          )
+      );
+      modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+    }
+
     await askForAttributes(modelName);
   } catch (err) {
     console.error("❌ Error:", err.message);
@@ -80,92 +91,116 @@ async function createActorModel() {
 }
 
 async function askForAttributes(modelName) {
-  rl.question("Do you want to Add an attribute [yes/no] ? :", async (ans) => {
-    switch (ans) {
-      case "yes":
-        rl.question("👉Enter the Attribute Name: ", async (attributeName) => {
-          // attributeNameGlob = attributeName;
-          attributes += `${attributeName}: this.data.${attributeName},\n`;
-          askForAttributes(modelName);
-        });
-        break;
-      case "no":
-        actorModelFileContent += mvcFileContent.actorModelFileContent(
-          modelName,
-          attributes
-        );
-
-        await createActorControllerfile(modelName);
-
-        // By Atharva
-        await addActorRoutes(modelName);
-
-        // await addActorRoutes(modelName);
-        await fs.appendFile(
-          `${projectDirPath}/models/${modelName}.js`,
-          `${actorModelFileContent}`
-        );
-        console.log("✅ Model File Created Successfully!\n");
-
-        // rl.close();
-        menu();
-        break;
-      default:
-        console.log("❌Invalid Input. Please Enter Valid Input\n");
-        await askForAttributes(modelName); // recursive call to ask again
-        break;
-    }
+  let ans = await confirm({
+    message: "Do you want to Add an attribute?",
+    default: false,
   });
+
+  ans = ans ? "Yes" : "No";
+
+  switch (ans) {
+    case "Yes":
+      const attributeName = await input({
+        message: "👉 Enter the Attribute Name:",
+      });
+      attributes += `${attributeName}: this.data.${attributeName},\n`;
+      askForAttributes(modelName);
+      break;
+    case "No":
+      actorModelFileContent += mvcFileContent.actorModelFileContent(
+        modelName,
+        attributes
+      );
+
+      await createActorControllerfile(modelName);
+
+      await addActorRoutes(modelName);
+
+      await fs.appendFile(
+        `${projectDirPath}/models/${modelName}.js`,
+        `${actorModelFileContent}`
+      );
+      console.log("✅ Model File Created Successfully!\n");
+
+      // rl.close();
+      menu();
+      break;
+    default:
+      console.log(chalk.red("❌Invalid Input. Please Enter Valid Input\n"));
+      await askForAttributes(modelName); // recursive call to ask again
+      break;
+  }
 }
 
 //Non actor model
-
 async function createModel() {
   content = "";
-
-  rl.question("👉Enter the Name of the *MODEL* : ", async (modelName) => {
-    // modelNameGlob = modelName;
-    await askForNonActorAttributes(modelName);
+  ModelFileContent = "";
+  nonActorAttributes = "";
+  let modelName = await input({
+    message: "👉 Enter the Name of the *Entity MODEL* [First Letter Cap]:",
   });
+
+  console.log("Model::: " + modelName);
+
+  if (modelName.length === 0 || modelName.trim() === "") {
+    console.log(chalk.red("❌ Model name cannot be empty."));
+    await createModel();
+  }
+
+  if (modelName.charAt(0) !== modelName.charAt(0).toUpperCase()) {
+    console.log(
+      chalk.red(
+        `❌ Model name should start with a capital letter. Using model name as `
+      ) +
+        chalk.green(`${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`)
+    );
+    modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+  }
+
+  await askForNonActorAttributes(modelName);
 }
 
 async function askForNonActorAttributes(modelName) {
-  rl.question("Do you want to Add an attribute [yes/no]? : ", async (ans) => {
-    switch (ans) {
-      case "yes":
-        rl.question("👉Enter the Attribute Name: ", async (attributeName) => {
-          // attributeNameGlob = attributeName;
-          nonActorAttributes += `${attributeName}: this.data.${attributeName},\n`;
-          await askForNonActorAttributes(modelName);
-        });
-
-        break;
-      case "no":
-        // console.log(nonActorAttributes)
-        // flCapitalisedSubModuleName = capitalizeFirstLetter(subModuleName)
-        ModelFileContent += mvcFileContent.nonActorModelFileContent(
-          modelName,
-          nonActorAttributes
-        );
-
-        await addNonActorRoutes(modelName);
-
-        await createNonActorController(modelName);
-        await fs.appendFile(
-          `${projectDirPath}/models/${modelName}.js`,
-          `${ModelFileContent}`
-        );
-
-        console.log("✅ Model File created successfully!");
-
-        menu();
-        break;
-      default:
-        console.log("❌ Invalid Input. Please Enter Valid Input ");
-        await askForAttributes(modelName); // recursive call to ask again
-        break;
-    }
+  let ans = await confirm({
+    message: "Do you want to Add an attribute?",
+    default: false,
   });
+
+  ans = ans ? "Yes" : "No";
+
+  switch (ans) {
+    case "Yes":
+      const attributeName = await input({
+        message: "👉 Enter the Attribute Name:",
+      });
+      nonActorAttributes += `${attributeName}: this.data.${attributeName},\n`;
+      await askForNonActorAttributes(modelName);
+
+      break;
+    case "No":
+      ModelFileContent += mvcFileContent.nonActorModelFileContent(
+        modelName,
+        nonActorAttributes
+      );
+
+      await addNonActorRoutes(modelName);
+
+      await createNonActorController(modelName);
+      await fs.appendFile(
+        `${projectDirPath}/models/${modelName}.js`,
+        `${ModelFileContent}`
+      );
+
+      console.log("✅ Model File created successfully!");
+
+      menu();
+      break;
+    default:
+      console.log(chalk.red("❌Invalid Input. Please Enter Valid Input\n"));
+      await askForAttributes(modelName); // recursive call to ask again
+      break;
+  }
 }
 
 async function createActorControllerfile(modelname) {
@@ -534,105 +569,100 @@ async function addDocker() {
   menu();
 }
 async function menu() {
- 
-
-if(projectDirPath == null || projectDirPath == undefined){
-   projectDirPath = await fileSelector({
-    message: 'Select a directory to create project inside of:',
-    type: "directory",
-    filter: (file) => {
-      return file.isDirectory()
-    }
-  })
-  const projectName = await input({
-    message: 'Enter the project name:'
-    , default: "myNodeProject"
-  });
-  projectDirPath = path.join(
-    projectDirPath, projectName
-  );
-  await fs.mkdir(projectDirPath, { recursive: true });
-}
+  if (projectDirPath == null || projectDirPath == undefined) {
+    projectDirPath = await fileSelector({
+      message: "Select a directory to create project inside of:",
+      type: "directory",
+      filter: (file) => {
+        return file.isDirectory();
+      },
+    });
+    const projectName = await input({
+      message: "Enter the project name:",
+      default: "myNodeProject",
+    });
+    projectDirPath = path.join(projectDirPath, projectName);
+    await fs.mkdir(projectDirPath, { recursive: true });
+  }
 
   let answer = await promptUser();
-    switch (answer) {
-      case "1":
-        try {
-          await initialize();
-        } catch (err) {
-          console.error("❌ Error during initialization1:", err.message);
-        }
-        break;
+  switch (answer) {
+    case "1":
+      try {
+        await initialize();
+      } catch (err) {
+        console.error("❌ Error during initialization1:", err.message);
+      }
+      break;
 
-      case "2":
-        try {
-          await createActorModel();
-        } catch (err) {
-          console.error("❌ Error creating actor model:", err.message);
-        }
-        break;
+    case "2":
+      try {
+        await createActorModel();
+      } catch (err) {
+        console.error("❌ Error creating actor model:", err.message);
+      }
+      break;
 
-      case "3":
-        try {
-          createModel();
-        } catch (err) {
-          console.error("❌ Error creating model:", err.message);
-        }
-        break;
+    case "3":
+      try {
+        createModel();
+      } catch (err) {
+        console.error("❌ Error creating model:", err.message);
+      }
+      break;
 
-      case "4":
-        try {
-          await addChatInterface();
-        } catch (err) {
-          console.error("❌ Error creating model:", err.message);
-        }
-        break;
+    case "4":
+      try {
+        await addChatInterface();
+      } catch (err) {
+        console.error("❌ Error creating model:", err.message);
+      }
+      break;
 
-      case "5":
-        try {
-          await addFileUpload();
-        } catch (err) {
-          console.error("❌ Error creating model:", err.message);
-        }
-        break;
-      case "6":
-        try {
-          await addFirebaseFCM();
-        } catch (err) {
-          console.error("❌ Error adding firebase:", err.message);
-        }
-        break;
-      case "7":
-        try {
-          await addWhatsapp();
-        } catch (err) {
-          console.error("❌ Error adding whatsapp:", err.message);
-        }
-        break;
-      case "8":
-        try {
-          await addNodemailer();
-        } catch (err) {
-          console.error("❌ Error adding nodemailer:", err.message);
-        }
-        break;
-      case "9":
-        try {
-          await addDocker();
-        } catch (err) {
-          console.error("❌ Error adding docker setup:", err.message);
-        }
-        break;
-      case "10":
-        console.log("✨HAPPY CODING - Thank You For Using✨");
-        exit(0);
-      default:
-        console.log("❌ Invalid Input. Please enter a valid option.\n");
-        menu();
-        break;
-    }
-
+    case "5":
+      try {
+        await addFileUpload();
+      } catch (err) {
+        console.error("❌ Error creating model:", err.message);
+      }
+      break;
+    case "6":
+      try {
+        await addFirebaseFCM();
+      } catch (err) {
+        console.error("❌ Error adding firebase:", err.message);
+      }
+      break;
+    case "7":
+      try {
+        await addWhatsapp();
+      } catch (err) {
+        console.error("❌ Error adding whatsapp:", err.message);
+      }
+      break;
+    case "8":
+      try {
+        await addNodemailer();
+      } catch (err) {
+        console.error("❌ Error adding nodemailer:", err.message);
+      }
+      break;
+    case "9":
+      try {
+        await addDocker();
+      } catch (err) {
+        console.error("❌ Error adding docker setup:", err.message);
+      }
+      break;
+    case "10":
+      console.log("✨HAPPY CODING - Thank You For Using✨");
+      exit(0);
+    default:
+      console.log("❌ Invalid Input. Please enter a valid option.\n");
+      menu();
+      break;
+  }
 }
 
-displayHeader()
+displayHeader();
 menu();
