@@ -1,22 +1,22 @@
 import { select, Separator } from "@inquirer/prompts";
-import chalk from 'chalk';
+import ansiColors from "ansi-colors";
 import process from 'process';
-
+import figureSet from "figures";
 async function promptUser() {
     try {
         const answer = await select({
             theme: {
-                prefix: "🚀",
+                prefix: ansiColors.green(figureSet.nodejs),
 
                 style: {
-                    highlight: (text) => chalk.cyanBright.underline(text),
-                    message: (text) => chalk.yellow.bold(text),
+                    highlight: (text) => ansiColors.cyanBright.underline(text),
+                    message: (text) => ansiColors.yellow.bold(text),
                 }
                 // icon: "🚀",
                 // helpMode: true,
 
             },
-            message: chalk.magentaBright.italic("Select your choice"),
+            message: ansiColors.magentaBright.italic("Select your choice"),
             pageSize: 11,
             loop: false,
             default: "mvc",
@@ -24,53 +24,53 @@ async function promptUser() {
                 {
                     name: 'Initialize MVC',
                     value: '1',
-                    description: chalk.gray('Use this to initialize a new MVC project'),
+                    description: ansiColors.gray('Use this to initialize a new MVC project'),
                 },
                 {
                     name: 'Create New Actor Model',
                     value: '2',
-                    description: chalk.gray('Use this to create a new actor model (First Letter Uppercase) (eg- User, Admin,etc)'),
+                    description: ansiColors.gray('Use this to create a new actor model (First Letter Uppercase) (eg- User, Admin,etc)'),
                 },
                 {
                     name: 'Create New Entity Model',
                     value: '3',
-                    description: chalk.gray('Use this to create a new entity model (First Letter Uppercase) (eg - Book, Product,etc)'),
+                    description: ansiColors.gray('Use this to create a new entity model (First Letter Uppercase) (eg - Book, Product,etc)'),
                 },
                 {
                     name: 'Add Chat Module',
                     value: '4',
-                    description: chalk.gray('Use this to create a chat module'),
+                    description: ansiColors.gray('Use this to create a chat module'),
                 },
                 {
                     name: 'Add File Upload Module',
                     value: '5',
-                    description: chalk.gray('Use this to create a file upload module'),
+                    description: ansiColors.gray('Use this to create a file upload module'),
                 },
                 {
                     name: 'Add Firebase For Firebase Cloud Messaging',
                     value: '6',
-                    description: chalk.gray('Use this to create API routes for Firebase Cloud Messaging (FCM) for mobile push notifications'),
+                    description: ansiColors.gray('Use this to create API routes for Firebase Cloud Messaging (FCM) for mobile push notifications'),
                 },
                 {
                     name: 'Add Whatsapp Bot Messaging',
                     value: '7',
-                    description: chalk.gray('Use this to create API routes for Whatsapp Bot Messaging'),
+                    description: ansiColors.gray('Use this to create API routes for Whatsapp Bot Messaging'),
                 },
                 {
                     name: 'Add Nodemailer',
                     value: '8',
-                    description: chalk.gray('Use this to add Nodemailer functionality for sending emails'),
+                    description: ansiColors.gray('Use this to add Nodemailer functionality for sending emails'),
                 },
                 {
                     name: 'Add Docker Setup',
                     value: '9',
-                    description: chalk.gray('Use this to add Docker setup for containerization'),
+                    description: ansiColors.gray('Use this to add Docker setup for containerization'),
                 },
                 new Separator(),
                 {
-                    name: chalk.red.bold('Exit'),
+                    name: ansiColors.red.bold('Exit'),
                     value: '10',
-                    description: chalk.gray('Use this to exit the CLI'),
+                    description: ansiColors.gray('Use this to exit the CLI'),
                 }
             ],
         });

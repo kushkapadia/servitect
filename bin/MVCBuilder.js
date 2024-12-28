@@ -16,6 +16,8 @@ import codeInserter from "./codeInserter.js";
 import { initializeReadline } from "./readlineInterface.js";
 import fileContent from "./fileContents.js";
 import promptUser from "./prompts/menuPrompt.js";
+
+
 import fileSelector from "inquirer-file-selector";
 import { input } from "@inquirer/prompts";
 import { confirm } from "@inquirer/prompts";
@@ -642,21 +644,25 @@ async function addDocker() {
   menu();
 }
 async function menu() {
-  if (projectDirPath == null || projectDirPath == undefined) {
-    projectDirPath = await fileSelector({
-      message: "Select a directory to create project inside of:",
-      type: "directory",
-      filter: (file) => {
-        return file.isDirectory();
-      },
-    });
-    const projectName = await input({
-      message: "Enter the project name:",
-      default: "myNodeProject",
-    });
-    projectDirPath = path.join(projectDirPath, projectName);
-    await fs.mkdir(projectDirPath, { recursive: true });
-  }
+ 
+
+if(projectDirPath == null || projectDirPath == undefined){
+   projectDirPath = await fileSelector({
+    message: 'Select a directory to create project in:',
+    type: "directory",
+    filter: (file) => {
+      return file.isDirectory()
+    }
+  })
+  const projectName = await input({
+    message: 'Enter the project name:'
+    , default: "myNodeProject"
+  });
+  projectDirPath = path.join(
+    projectDirPath, projectName
+  );
+  await fs.mkdir(projectDirPath, { recursive: true });
+}
 
   let answer = await promptUser();
   switch (answer) {
@@ -742,5 +748,6 @@ async function menu() {
   }
 }
 
-displayHeader();
+console.log(displayHeader);
+
 menu();
