@@ -18,7 +18,7 @@ import fileContent from "./fileContents.js";
 import promptUser from "./prompts/menuPrompt.js";
 import fileSelector from 'inquirer-file-selector'
 import { input } from '@inquirer/prompts';
-import chalk from "chalk";
+
 let content = "";
 let attributes = "";
 let nonActorAttributes = "";
@@ -538,7 +538,7 @@ async function menu() {
 
 if(projectDirPath == null || projectDirPath == undefined){
    projectDirPath = await fileSelector({
-    message: 'Select a directory to create project inside of:',
+    message: 'Select a directory to create project in:',
     type: "directory",
     filter: (file) => {
       return file.isDirectory()
@@ -634,5 +634,6 @@ if(projectDirPath == null || projectDirPath == undefined){
 
 }
 
-displayHeader()
+console.log(displayHeader);
+
 menu();
