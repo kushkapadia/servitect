@@ -29,6 +29,7 @@
     "axios": "^1.7.9",
     "chalk": "^5.4.1",
     "inquirer-file-selector": "^0.6.1",
+    "servitect": "file:",
     "terminal-link": "^3.0.0"
   }
 }
