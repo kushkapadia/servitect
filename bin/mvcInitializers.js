@@ -7,7 +7,7 @@ import { exec } from "child_process";
 import mvcFileContent from "./fileContents.js";
 import { initializeReadline } from "./readlineInterface.js";
 import { input, number } from '@inquirer/prompts';
-import chalk from "chalk";
+import ansiColors from "ansi-colors";
 // initializer functions
 let rl = initializeReadline();
 const initializers = {
@@ -29,7 +29,7 @@ const initializers = {
 
     if (!isValidRoute || !routePrefix) {
       console.log(
-        chalk.red(
+        ansiColors.red(
           "❌ Invalid route prefix entered. Using Default Route Prefix."
         )
       );
