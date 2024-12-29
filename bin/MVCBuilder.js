@@ -12,7 +12,7 @@ import {
 } from "./dependencyInstaller.js";
 import codeInserter from "./codeInserter.js";
 import promptUser from "./prompts/menuPrompt.js";
-import figures, { mainSymbols, fallbackSymbols, replaceSymbols } from "figures";
+import figures from "figures";
 import fileSelector from "inquirer-file-selector";
 import { input } from "@inquirer/prompts";
 import { confirm } from "@inquirer/prompts";
@@ -50,7 +50,6 @@ async function initialize() {
   try {
     mvcInitializers.initPackageFile(projectDirPath);
     await installWithAnimation(dependencies, projectDirPath);
-
     await mvcInitializers.initMainAppFile(projectDirPath);
     await mvcInitializers.initDbConnection(projectDirPath);
     await mvcInitializers.initEnv(projectDirPath);
@@ -476,6 +475,7 @@ async function createFirebaseRoutes() {
 }
 
 async function addFirebaseFCM() {
+  try {
   await installWithAnimation(firebaseDependencies, projectDirPath);
 
   let PROJECT_ID = "project_id";
@@ -494,7 +494,6 @@ async function addFirebaseFCM() {
     });
   }
 
-  try {
     // Read the file content
     let data = await fs.readFile(`${projectDirPath}/app.js`, "utf8");
 
@@ -516,10 +515,8 @@ async function addFirebaseFCM() {
     );
     await createFirebaseRoutes();
 
-    menu();
-  } catch (err) {
-    console.error(`${ansiColors.red(figures.cross)} Error: ${err.message}`);
-  }
+  
+  
 
   await fs.appendFile(
     `${projectDirPath}/firebase-key.json`,
@@ -562,6 +559,9 @@ async function addFirebaseFCM() {
   await showProgressMessages(firebaseMessages);
 
   menu();
+  } catch (err) {
+    console.error(`${ansiColors.red(figures.cross)} Error: ${err.message}`);
+  }
 }
 
 async function addWhatsapp() {
@@ -760,7 +760,7 @@ async function menu() {
       break;
 
     case "10":
-      console.log("✨HAPPY CODING - Thank You For Using✨");
+      console.log(ansiColors.magenta.italic("✨HAPPY CODING - Thank You For Using✨"));
       exit(0);
     default:
       console.log(

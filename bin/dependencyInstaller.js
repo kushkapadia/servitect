@@ -11,13 +11,13 @@ async function showProgressAnimation() {
   const spinner = ora("Setting up your project...").start();
   for (const message of progressMessages) {
     // Clear the line and move cursor to start
-    spinner.text = chalk.green(`✓ ${message}`);
+    spinner.text = chalk.cyan(`${chalk.cyan(figures.tick)} ${message}`);
     await sleep(500);
   }
   // Stop the spinner and show completion
   spinner.stop();
   console.log(
-    chalk.cyan(`${chalk.cyan(figures.tick)} Configuration completed!`)
+    chalk.greenBright(`${chalk.greenBright(figures.tick)} Configuration completed!`)
   );
 }
 
@@ -26,7 +26,7 @@ async function showProgressMessages(messages) {
   const spinner = ora("Starting...").start();
   for (const message of messages) {
     // Clear the line and move cursor to start
-    spinner.text = chalk.green(`✓ ${message}`);
+    spinner.text = chalk.cyan(`${message}`);
     await sleep(500);
   }
   // Stop the spinner and show completion
@@ -39,7 +39,7 @@ async function installWithAnimation(dependencies, dir) {
   for (const dep of dependencies) {
     const { name, isDev } = dep;
     // Update spinner text
-    spinner.text = chalk.green(`Installing ${name}...`);
+    spinner.text = chalk.cyanBright(`Installing ${name}...`);
 
     const command = isDev ? `npm install -D ${name}` : `npm install ${name}`;
 
@@ -60,7 +60,7 @@ async function installWithAnimation(dependencies, dir) {
   // Stop the spinner and show completion
   spinner.stop();
   console.log(
-    chalk.cyan(`${chalk.cyan(figures.tick)} Package installation completed!`)
+    chalk.greenBright(`${chalk.greenBright(figures.tick)} Package installation completed!`)
   );
 }
 

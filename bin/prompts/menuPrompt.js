@@ -2,24 +2,21 @@ import { select, Separator } from "@inquirer/prompts";
 import ansiColors from "ansi-colors";
 import process from 'process';
 import figureSet from "figures";
+
 async function promptUser() {
     try {
         const answer = await select({
             theme: {
                 prefix: ansiColors.green(figureSet.nodejs),
-
                 style: {
                     highlight: (text) => ansiColors.cyanBright.underline(text),
                     message: (text) => ansiColors.yellow.bold(text),
-                }
-                // icon: "🚀",
-                // helpMode: true,
-
+                },
             },
             message: ansiColors.magentaBright.italic("Select your choice"),
             pageSize: 11,
-            loop: false,
-            default: "mvc",
+            loop: true,
+            default: "10",
             choices: [
                 {
                     name: 'Initialize MVC',
@@ -85,5 +82,11 @@ async function promptUser() {
         }
     }
 }
+
+// Handle Ctrl+C signal
+process.on('SIGINT', () => {
+    console.log(ansiColors.red.bold('\n\nExiting... Goodbye!'));
+    process.exit(0); // Exit the process cleanly
+});
 
 export default promptUser;
