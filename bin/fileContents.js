@@ -610,19 +610,6 @@ try {
 
 }
   });
-
-
-  // const failedNotifications = results.filter(
-  //   (result) => result.status === "error"
-  // );
-
-  // if (failedNotifications.length > 0) {
-  //   new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-
-  // }
-
-  // new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-
 }
 `),
   uploadControllerFile: removeIndentation(`

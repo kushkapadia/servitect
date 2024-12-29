@@ -30,9 +30,9 @@ const initializers = {
 
     if (!isValidRoute || !routePrefix) {
       console.log(
-        `${ansiColors.blue(
-          figures.info
-        )} Invalid route prefix entered. Using Default Route Prefix.`
+        ansiColors.cyan(
+          `${figures.info} Invalid route prefix entered. Using Default Route Prefix.`
+        )
       );
       routePrefix = "/";
     }
