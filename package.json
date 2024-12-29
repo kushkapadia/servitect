@@ -1,15 +1,16 @@
 {
   "name": "servitect",
-  "version": "1.2.2",
+  "version": "1.2.6",
   "description": "servitect stands for Server-Architect. A one-click Node.js MVC Server generator",
-  "main": "MVCBuilder.js",
+  "main": "./bin/MVCBuilder.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./bin/MVCBuilder.js"
+    "build": "node ./bin/MVCBuilder.js",
+    "postinstall": "node ./bin/postinstall.js"
   },
   "bin": {
-    "mvc-create": "./bin/MVCBuilder.js"
+    "servitect": "./bin/MVCBuilder.js"
   },
   "repository": {
     "type": "git",
@@ -34,6 +35,7 @@
     "figures": "^6.1.0",
     "gradient-string": "^3.0.0",
     "inquirer-file-selector": "^0.6.1",
+    "is-installed-globally": "^1.0.0",
     "ora": "^8.1.1",
     "progress": "^2.0.3",
     "servitect": "file:",
