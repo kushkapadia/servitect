@@ -36,7 +36,7 @@ const fileUploadMessages = [
   "FileUpload Controller file created successfully.",
   "FileUpload Multer middleware created successfully.",
   "FileUpload Helper file created successfully.",
-  "Public &  folder created successfully.",
+  "Public & uploads folder created successfully.",
 ];
 
 const firebaseMessages = [

@@ -16,7 +16,6 @@ import figures from "figures";
 import fileSelector from "inquirer-file-selector";
 import { input } from "@inquirer/prompts";
 import { confirm } from "@inquirer/prompts";
-import chalk from "chalk";
 import ansiColors from "ansi-colors";
 import {
   dependencies,
@@ -37,8 +36,8 @@ import {
 } from "./messages/message.js";
 import removeIndentation from "./fileFormatter.js";
 
+// Global Variables
 let projectDirPath;
-
 let content = "";
 let attributes = "";
 let nonActorAttributes = "";
@@ -70,6 +69,7 @@ async function initialize() {
   }
 }
 
+// Actor Model
 async function createActorModel() {
   try {
     content = "";
@@ -101,7 +101,7 @@ async function createActorModel() {
 
     await askForAttributes(modelName);
   } catch (err) {
-    console.error(`${chalk.red(figures.cross)} Error:`, err.message);
+    console.error(`${ansiColors.red(figures.cross)} Error:`, err.message);
   }
 }
 
@@ -159,16 +159,18 @@ async function createModel() {
   });
 
   if (modelName.length === 0 || modelName.trim() === "") {
-    console.log(chalk.red(`${figures.cross} Model name cannot be empty.`));
+    console.log(ansiColors.red(`${figures.cross} Model name cannot be empty.`));
     await createModel();
   }
 
   if (modelName.charAt(0) !== modelName.charAt(0).toUpperCase()) {
     console.log(
-      chalk.yellow(
+      ansiColors.yellow(
         `${figures.cross} Model name must start with a capital letter. Using name as `
       ) +
-        chalk.green(`${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`)
+        ansiColors.green(
+          `${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`
+        )
     );
     modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
   }
@@ -212,13 +214,16 @@ async function askForNonActorAttributes(modelName) {
       break;
     default:
       console.log(
-        chalk.red(`${figures.cross} Invalid Input. Please Enter Valid Input\n`)
+        ansiColors.red(
+          `${figures.cross} Invalid Input. Please Enter Valid Input\n`
+        )
       );
       await askForAttributes(modelName); // recursive call to ask again
       break;
   }
 }
 
+// Actor Controller
 async function createActorControllerfile(modelname) {
   await fs.appendFile(
     `${projectDirPath}/controllers/${modelname.toLowerCase()}Controller.js`,
@@ -226,6 +231,7 @@ async function createActorControllerfile(modelname) {
   );
 }
 
+// Non-Actor Controller
 async function createNonActorController(modelname) {
   await fs.appendFile(
     `${projectDirPath}/controllers/${modelname.toLowerCase()}Controller.js`,
@@ -233,6 +239,7 @@ async function createNonActorController(modelname) {
   );
 }
 
+// Actor Routes
 async function addActorRoutes(modelName) {
   try {
     // Create the folder in routes
@@ -269,6 +276,7 @@ async function addActorRoutes(modelName) {
   }
 }
 
+// Non-Actor Routes
 async function addNonActorRoutes(modelName) {
   try {
     // Create the folder in routes
@@ -350,7 +358,7 @@ async function addChatInterface() {
   }
 }
 
-//Uplaod Interface
+//Upload Module
 async function createFileUploadRoutes() {
   try {
     await fs.writeFile(
@@ -446,6 +454,7 @@ async function addFileUpload() {
   menu();
 }
 
+// Firebase Cloud Messaging
 async function createFirebaseRoutes() {
   try {
     await fs.writeFile(
@@ -476,23 +485,23 @@ async function createFirebaseRoutes() {
 
 async function addFirebaseFCM() {
   try {
-  await installWithAnimation(firebaseDependencies, projectDirPath);
+    await installWithAnimation(firebaseDependencies, projectDirPath);
 
-  let PROJECT_ID = "project_id";
+    let PROJECT_ID = "project_id";
 
-  let ans = await confirm({
-    message: "Would you like to add your firebase credentials now?",
-    default: false,
-  });
-
-  ans = ans ? "Yes" : "No";
-
-  if (ans == "Yes") {
-    PROJECT_ID = await input({
-      message: "Enter the Project ID of firebase project:",
-      default: PROJECT_ID,
+    let ans = await confirm({
+      message: "Would you like to add your firebase credentials now?",
+      default: false,
     });
-  }
+
+    ans = ans ? "Yes" : "No";
+
+    if (ans == "Yes") {
+      PROJECT_ID = await input({
+        message: "Enter the Project ID of firebase project:",
+        default: PROJECT_ID,
+      });
+    }
 
     // Read the file content
     let data = await fs.readFile(`${projectDirPath}/app.js`, "utf8");
@@ -515,55 +524,51 @@ async function addFirebaseFCM() {
     );
     await createFirebaseRoutes();
 
-  
-  
-
-  await fs.appendFile(
-    `${projectDirPath}/firebase-key.json`,
-    `{
+    await fs.appendFile(
+      `${projectDirPath}/firebase-key.json`,
+      `{
     "message": "PASTE YOUR copied contents here"
 } `
-  );
-  console.log(
-    removeIndentation(
-      `
-      ${figures.star} ${ansiColors.cyan.bold(
-        "Firebase Private Key Added to Environment Variables"
-      )} ${figures.star}
-      
-      ${figures.bullet} Create a private key file.
-      ${figures.bullet} Create a Firebase project.
-      ${figures.bullet} Go to ${ansiColors.bold(
-        "🛠️ Settings"
-      )} -> ${ansiColors.bold("⛅ Cloud Messaging Tab")} and enable it.
-      ${figures.bullet} Navigate to ${ansiColors.bold(
-        "Service Accounts Tab"
-      )} and generate a ${ansiColors.bold("🔐 Private Key")}.
-      ${
-        figures.bullet
-      } Copy the content of the generated file into a file named ${ansiColors.bold(
-        "📂 firebase-key.json"
-      )}.
-    `
-    )
-  );
-  await fs.appendFile(
-    `${projectDirPath}/.env`,
-    '\nGOOGLE_APPLICATION_CREDENTIALS="firebase-key.json"'
-  );
-  await fs.appendFile(
-    `${projectDirPath}/controllers/firebaseController.js`,
-    mvcFileContent.firebaseControllerFile
-  );
+    );
+    console.log(
+      removeIndentation(
+        `
+        ⭐ ${ansiColors.magenta.bold(
+          "Firebase Private Key Added to Environment Variables"
+        )} ⭐
+    
+        • Create a private key file.
+        • Create a Firebase project.
+        • Go to ${ansiColors.yellow.bold(
+          "🛠️ Settings"
+        )} -> ${ansiColors.yellow.bold("⛅ Cloud Messaging Tab")} and enable it.
+        • Navigate to ${ansiColors.yellow.bold(
+          "Service Accounts Tab"
+        )} and generate a ${ansiColors.yellow.bold("🔐 Private Key")}.
+        • Copy the content of the generated file into a file named ${ansiColors.yellow.bold(
+          "📂 firebase-key.json"
+        )}.
+        `
+      )
+    );
+    await fs.appendFile(
+      `${projectDirPath}/.env`,
+      '\nGOOGLE_APPLICATION_CREDENTIALS="firebase-key.json"'
+    );
+    await fs.appendFile(
+      `${projectDirPath}/controllers/firebaseController.js`,
+      mvcFileContent.firebaseControllerFile
+    );
 
-  await showProgressMessages(firebaseMessages);
+    await showProgressMessages(firebaseMessages);
 
-  menu();
+    menu();
   } catch (err) {
     console.error(`${ansiColors.red(figures.cross)} Error: ${err.message}`);
   }
 }
 
+// WhatsApp Bot Messaging
 async function addWhatsapp() {
   await installWithAnimation(whatsappDependencies, projectDirPath);
 
@@ -596,6 +601,8 @@ async function addWhatsapp() {
 
   menu();
 }
+
+// Nodemailer
 async function addNodemailer() {
   await installWithAnimation(nodeMailerDependencies, projectDirPath);
 
@@ -634,6 +641,8 @@ async function addNodemailer() {
 
   menu();
 }
+
+// Docker
 async function addDocker() {
   await mvcInitializers.initDocker(projectDirPath);
 
@@ -641,7 +650,8 @@ async function addDocker() {
 
   menu();
 }
-async function menu() {
+
+async function selectAndCreateProjectDir() {
   if (projectDirPath == null || projectDirPath == undefined) {
     projectDirPath = await fileSelector({
       message: "Select a directory to create project in:",
@@ -656,6 +666,25 @@ async function menu() {
     });
     projectDirPath = path.join(projectDirPath, projectName);
     await fs.mkdir(projectDirPath, { recursive: true });
+  }
+}
+
+async function menu() {
+  try {
+    await selectAndCreateProjectDir();
+  } catch (error) {
+    if (error.code === "EPERM") {
+      console.log(
+        ansiColors.red(
+          `${figures.cross} Permission denied. Please try selecting another directory.`
+        )
+      );
+    } else {
+      console.log(
+        ansiColors.red(`${figures.cross} Unexpected error: ${error.message}`)
+      );
+    }
+    await selectAndCreateProjectDir();
   }
 
   let answer = await promptUser();
@@ -760,7 +789,9 @@ async function menu() {
       break;
 
     case "10":
-      console.log(ansiColors.magenta.italic("✨HAPPY CODING - Thank You For Using✨"));
+      console.log(
+        ansiColors.magenta.italic("✨HAPPY CODING - Thank You For Using✨")
+      );
       exit(0);
     default:
       console.log(
