@@ -57,6 +57,10 @@ const nodeMailerMessages = [
 
 const dockerMessages = ["Basic Docker file created successfully."];
 
+const llmUsingOllamaMessages = [
+  "LLM Using Ollama Routes Added.",
+  "LLM Using Ollama Helper.js created successfully."
+]
 export {
   progressMessages,
   actorMessages,
@@ -67,4 +71,5 @@ export {
   whatsappMessages,
   nodeMailerMessages,
   dockerMessages,
+  llmUsingOllamaMessages
 };

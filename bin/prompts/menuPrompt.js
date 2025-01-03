@@ -13,9 +13,9 @@ async function promptUser() {
           message: (text) => ansiColors.yellow.bold(text),
         },
       },
-      message: ansiColors.magentaBright.italic("Select your choice"),
+      message: ansiColors.magentaBright.italic("\n\nSelect your choice"),
       pageSize: 11,
-      loop: true,
+      loop: false,
       default: "1",
       choices: [
         {
@@ -79,10 +79,17 @@ async function promptUser() {
             "Use this to add Docker setup for containerization"
           ),
         },
+        {
+          name: "Add Large Language Model (LLM) Implementation",
+          value: "10",
+          description: ansiColors.gray(
+            "Use this to add LLM setup for text generation"
+          ),
+        },
         new Separator(),
         {
           name: ansiColors.red.bold("Exit"),
-          value: "10",
+          value: "11",
           description: ansiColors.gray("Use this to exit the CLI"),
         },
       ],
@@ -98,10 +105,44 @@ async function promptUser() {
   }
 }
 
+async function llmSubMenuPrompt() {
+  const llmOption = await select({
+    theme: {
+      prefix: ansiColors.green(figureSet.nodejs),
+      style: {
+        highlight: (text) => ansiColors.cyanBright.underline(text),
+        message: (text) => ansiColors.yellow.bold(text),
+      },
+    },
+    message: ansiColors.magentaBright.italic(
+      "\n\nSelect the LLM implementation"
+    ),
+    choices: [
+      {
+        name: "Using Ollama",
+        value: "ollama",
+        description: ansiColors.gray("Use Ollama for text generation"),
+      },
+      {
+        name: "Using OpenAI API",
+        value: "openai",
+        description: ansiColors.gray("Use OpenAI for text generation"),
+      },
+      new Separator(),
+      {
+        name: ansiColors.red.bold("Go Back"),
+        value: "back",
+        description: ansiColors.gray("Return to the main menu"),
+      },
+    ],
+  });
+  return llmOption
+}
 // Handle Ctrl+C signal
 process.on("SIGINT", () => {
   console.log(ansiColors.red.bold("\n\nExiting... Goodbye!"));
   process.exit(0); // Exit the process cleanly
 });
 
-export default promptUser;
+export default promptUser
+export { llmSubMenuPrompt }

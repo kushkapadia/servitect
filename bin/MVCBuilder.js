@@ -11,7 +11,8 @@ import {
   showProgressMessages,
 } from "./dependencyInstaller.js";
 import codeInserter from "./codeInserter.js";
-import promptUser from "./prompts/menuPrompt.js";
+import promptUser, { llmSubMenuPrompt } from "./prompts/menuPrompt.js";
+// import promptUser from "./prompts/menuPrompt.js";
 import figures from "figures";
 import fileSelector from "inquirer-file-selector";
 import { input } from "@inquirer/prompts";
@@ -21,6 +22,7 @@ import {
   dependencies,
   fileUploadDependencies,
   firebaseDependencies,
+  llmUsingOllamaDependencies,
   nodeMailerDependencies,
   whatsappDependencies,
 } from "./dependencies.js";
@@ -30,6 +32,7 @@ import {
   dockerMessages,
   fileUploadMessages,
   firebaseMessages,
+  llmUsingOllamaMessages,
   nodeMailerMessages,
   nonActorMessages,
   whatsappMessages,
@@ -62,8 +65,7 @@ async function initialize() {
     menu();
   } catch (err) {
     console.error(
-      `${ansiColors.red(figures.cross)} Error during initialization2:", ${
-        err.message
+      `${ansiColors.red(figures.cross)} Error during initialization2:", ${err.message
       }`
     );
   }
@@ -92,9 +94,9 @@ async function createActorModel() {
         ansiColors.yellow(
           `${figures.warning} Model name must start with a capital letter. Using name as `
         ) +
-          ansiColors.green(
-            `${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`
-          )
+        ansiColors.green(
+          `${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`
+        )
       );
       modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
     }
@@ -168,9 +170,9 @@ async function createModel() {
       ansiColors.yellow(
         `${figures.cross} Model name must start with a capital letter. Using name as `
       ) +
-        ansiColors.green(
-          `${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`
-        )
+      ansiColors.green(
+        `${modelName.charAt(0).toUpperCase()}${modelName.slice(1)}`
+      )
     );
     modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
   }
@@ -651,6 +653,49 @@ async function addDocker() {
   menu();
 }
 
+//LLM
+async function addLLMUsingOllama() {
+  try {
+    await installWithAnimation(llmUsingOllamaDependencies, projectDirPath);
+    await fs.writeFile(
+      path.join(`${projectDirPath}/routes`, `llmRoutes.js`),
+      mvcFileContent.llmUsingOllamaRouterContent
+    );
+
+    // Read the file content
+    let data = await fs.readFile(`${projectDirPath}/routes/router.js`, "utf8");
+
+    const importContent = `const llmUsingOllamaRoutes = require("./llmRoutes");`;
+
+    const routeContent = `router.use("/llm", llmUsingOllamaRoutes);`;
+
+    const importMarker = "//imports here";
+
+    const routeMarker = "//code here";
+
+    await fs.appendFile(
+      `${projectDirPath}/helper/LlmHelperOllama.js`,
+      mvcFileContent.llmUsingOllamaHelperFileContent,
+    );
+
+    await codeInserter(
+      importMarker,
+      routeMarker,
+      `${projectDirPath}/routes/router.js`,
+      importContent,
+      routeContent,
+      data
+    );
+
+    await showProgressMessages(llmUsingOllamaMessages);
+
+    menu();
+
+  } catch (err) {
+    console.error(`${ansiColors.red(figures.cross)} Error: ${err.message}`);
+  }
+}
+
 async function selectAndCreateProjectDir() {
   if (projectDirPath == null || projectDirPath == undefined) {
     projectDirPath = await fileSelector({
@@ -789,6 +834,31 @@ async function menu() {
       break;
 
     case "10":
+      const llmOption = await llmSubMenuPrompt();
+
+      switch (llmOption) {
+        case "ollama":
+          try {
+            await addLLMUsingOllama();
+          } catch (err) {
+            console.error(
+              `${ansiColors.red(figures.cross)} Error adding Ollama LLM setup:`,
+              err.message
+            );
+          }
+          break;
+        case "openai":
+          console.log("This feature will be available soon. Thank you for your patience🙏");
+          break;
+
+        case "back":
+          menu();
+          break;
+      }
+
+      break;
+
+    case "11":
       console.log(
         ansiColors.magenta.italic("✨HAPPY CODING - Thank You For Using✨")
       );

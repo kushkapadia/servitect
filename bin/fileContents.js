@@ -135,8 +135,7 @@ app.use(cors());
 module.exports = app;
 `),
   envFileContent: (PORT, CONNECTION_STRING) =>
-    `PORT=${
-      !PORT || isNaN(PORT) || PORT < 1 || PORT > 65535 ? "4000" : PORT
+    `PORT=${!PORT || isNaN(PORT) || PORT < 1 || PORT > 65535 ? "4000" : PORT
     }\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
   gitIgnoreFileContent: `/node_modules\n.env`,
   packageJsonFileContent: `{
@@ -196,6 +195,8 @@ module.exports = app;
           Messages.prototype.SUCCESSFULLY_FILE_DELETED = "Successfully file deleted.";
           Messages.prototype.FAILED_TO_DELETE_FROM_CLOUDINARY =
             "Failed to delete from cloudinary.";
+          Messages.prototype.SUCCESSFULLY_GENERATED = "LLM Response Success";
+
         module.exports = Messages;
         
         `),
@@ -1304,6 +1305,84 @@ COPY . .
 EXPOSE 4000
 
 CMD ["npm","run", "server"]`),
-};
 
+
+  llmUsingOllamaRouterContent: removeIndentation(`
+    const express = require('express');
+    const router = express.Router();
+    const AuthHelper = require('../helper/JWTAuthHelper');
+    const TryCatch = require('../helper/TryCatch');
+    const Messages = require('../constants/Message');
+    const LlmHelperOllama = require('../helper/LlmHelperOllama');
+
+ 
+
+    //imports here
+
+    //code here
+
+    //LlmUsingOllama --start
+
+    router.post("/ask-llm", AuthHelper.verifyToken, new TryCatch(LlmHelperOllama.llmModel).tryCatchGlobe())
+
+    //LlmUsingOllama --end
+    
+    module.exports = router;
+  `),
+
+  llmUsingOllamaHelperFileContent: removeIndentation(` 
+
+const { ChatOllama } = require("@langchain/ollama")
+const { ChatPromptTemplate } = require("@langchain/core/prompts")
+const { SystemMessage, HumanMessage, AIMessage } = require("@langchain/core/messages")
+const JsonResponse = require("./JsonResponse")
+const Messages = require("../constants/Message")
+const axios = require("axios")
+const conversationHistories = new Map()
+
+const getOrCreateHistory = sessionId => {
+  if (!conversationHistories.has(sessionId)) {
+    // Initialize conversation history with the system message if it doesn't exist
+      conversationHistories.set(sessionId, [new SystemMessage("You are a friend of anyone who talks to you! Your name is Servi")]) //Input The system prompt here.
+  }
+  return conversationHistories.get(sessionId)
+}
+
+exports.llmModel = async function (req, res) {
+  const chatModel = new ChatOllama({
+    baseUrl: "http://localhost:11434", // Default value
+    model: "llama3.1" //Change the name of the model to the one you want to use.
+  })
+  console.log(req.apiUser._id)
+  const sessionId = req.apiUser._id // Using a header for session ID;
+  const conversationHistory = getOrCreateHistory(sessionId)
+
+  const sendMessage = async input => {
+    // Add user input to conversation history
+    conversationHistory.push(new HumanMessage(input))
+
+    // Create the prompt with the current conversation history
+    const prompt = ChatPromptTemplate.fromMessages(conversationHistory)
+
+    // Call the model with the updated prompt
+    const response = await prompt.pipe(chatModel).invoke({})
+    // Add model's response to the conversation history
+    conversationHistory.push(new AIMessage(response.content))
+    // Return the response content
+    return response.content
+  }
+
+  // Extract the user input from the request body
+  console.log(req.body.input)
+  const userInput = req.body.input
+
+  // Send the user input to the model and get the response
+  const modelResponse = await sendMessage(userInput)
+  // res.status(200).json({ response: modelResponse })
+
+  new JsonResponse(req, res).jsonSuccess(modelResponse, new Messages().SUCCESSFULLY_GENERATED)
+}
+
+  `),
+};
 export default fileContent;

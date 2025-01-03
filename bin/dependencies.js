@@ -28,10 +28,18 @@ const whatsappDependencies = [{ name: "axios", isDev: false }];
 
 const nodeMailerDependencies = [{ name: "nodemailer", isDev: false }];
 
+const llmUsingOllamaDependencies = [
+  { name: "@langchain/community", isDev: false },
+  { name: "@langchain/core", isDev: false },
+  { name: "@langchain/ollama", isDev: false },
+  { name: "langchain", isDev: false },
+];
+
 export {
   dependencies,
   fileUploadDependencies,
   firebaseDependencies,
   whatsappDependencies,
   nodeMailerDependencies,
+  llmUsingOllamaDependencies
 };
