@@ -19,7 +19,7 @@ const fileUploadDependencies = [
 ];
 
 const firebaseDependencies = [
-  { name: "firebase-admin", isDev: false },
+  { name: "firebase-admin@12.7.0", isDev: false },
   { name: "google-auth-library", isDev: false },
   { name: "googleapis", isDev: false },
 ];
@@ -41,5 +41,5 @@ export {
   firebaseDependencies,
   whatsappDependencies,
   nodeMailerDependencies,
-  llmUsingOllamaDependencies
+  llmUsingOllamaDependencies,
 };
