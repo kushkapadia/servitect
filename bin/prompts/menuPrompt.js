@@ -136,7 +136,7 @@ async function llmSubMenuPrompt() {
       },
     ],
   });
-  return llmOption
+  return llmOption;
 }
 // Handle Ctrl+C signal
 process.on("SIGINT", () => {
@@ -144,5 +144,5 @@ process.on("SIGINT", () => {
   process.exit(0); // Exit the process cleanly
 });
 
-export default promptUser
-export { llmSubMenuPrompt }
+export default promptUser;
+export { llmSubMenuPrompt };
