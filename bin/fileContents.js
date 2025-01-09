@@ -126,12 +126,8 @@ app.use(express.json());
 
 app.use(express.static("public"));
 app.use(morgan("dev"));
-app.use("${routePrefix}", routes);
-
 app.use(cors());
-
-
-
+app.use("${routePrefix}", routes);
 module.exports = app;
 `),
   envFileContent: (PORT, CONNECTION_STRING) =>
