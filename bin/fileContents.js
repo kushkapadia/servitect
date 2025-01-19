@@ -1,8 +1,9 @@
-const formatFile = require("./fileFormatter")
+import removeIndentation from "./fileFormatter.js";
 
 // all Essential MVC File contents
 const fileContent = {
-  nodemailerFileContent: formatFile(`const nodemailer = require("nodemailer")
+  nodemailerFileContent:
+    removeIndentation(`const nodemailer = require("nodemailer")
 require("dotenv").config()
 class Nodemailer{
     recieverEmail
@@ -47,7 +48,7 @@ class Nodemailer{
 }
 module.exports = Nodemailer
 `),
-  whatsappFileContent: formatFile(`import axios from "axios"
+  whatsappFileContent: removeIndentation(`import axios from "axios"
 require("dotenv").config()
 class WhatsappNotification {
     numberToSend;
@@ -87,7 +88,7 @@ class WhatsappNotification {
 }
 module.exports = WhatsappNotification
 `),
-  dbFileContent: formatFile(`const {MongoClient} = require('mongodb')
+  dbFileContent: removeIndentation(`const {MongoClient} = require('mongodb')
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -103,8 +104,9 @@ dotenv.config()
       app.listen(process.env.PORT)
     }
       start()`),
-  appFileContent: (routePrefix) => formatFile(`const express = require("express");
-const router = require("./router");
+  appFileContent: (routePrefix) =>
+    removeIndentation(`const express = require("express");
+const routes = require("./routes/router.js");
 const morgan = require("morgan");
 
 const cors = require("cors");
@@ -124,16 +126,13 @@ app.use(express.json());
 
 app.use(express.static("public"));
 app.use(morgan("dev"));
-app.use("${routePrefix}", router);
-
 app.use(cors());
-
-
-
+app.use("${routePrefix}", routes);
 module.exports = app;
 `),
   envFileContent: (PORT, CONNECTION_STRING) =>
-    `PORT=${PORT}\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
+    `PORT=${!PORT || isNaN(PORT) || PORT < 1 || PORT > 65535 ? "4000" : PORT
+    }\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
   gitIgnoreFileContent: `/node_modules\n.env`,
   packageJsonFileContent: `{
   "name": "backend",
@@ -152,7 +151,7 @@ module.exports = app;
   }
 }
 `,
-  messageFileContent: formatFile(`
+  messageFileContent: removeIndentation(`
         let Messages = function () {
 
         };
@@ -171,6 +170,7 @@ module.exports = app;
         Messages.prototype.CREATE_FAILED = "Failed to Create New Entry";
         Messages.prototype.SUCCESSFULLY_DELETED = "Data successfully deleted";
         Messages.prototype.SUCCESSFULLY_RECORD_DELETED = "Data successfully deleted";
+        Messages.prototype.SUCCESSFULLY_UPDATED = "Data successfully updated";
         
           //JWT Messages
           Messages.prototype.TOKEN_ERROR = "Token not generated.";
@@ -191,10 +191,12 @@ module.exports = app;
           Messages.prototype.SUCCESSFULLY_FILE_DELETED = "Successfully file deleted.";
           Messages.prototype.FAILED_TO_DELETE_FROM_CLOUDINARY =
             "Failed to delete from cloudinary.";
+          Messages.prototype.SUCCESSFULLY_GENERATED = "LLM Response Success";
+
         module.exports = Messages;
         
         `),
-  JsonResponseFileContent: formatFile(`
+  JsonResponseFileContent: removeIndentation(`
         
 const HttpStatus = require("http-status-codes");
 
@@ -232,7 +234,7 @@ JsonResponse.prototype.jsonSuccess = function(data, message) {
 
   module.exports = JsonResponse
         `),
-  JWTAuthHelperFileContent: formatFile(`        
+  JWTAuthHelperFileContent: removeIndentation(`        
 const jwt = require("jsonwebtoken");
 const JsonResponse = require('./JsonResponse');
 
@@ -263,7 +265,7 @@ console.log("here")
   }
 };
         `),
-  tryCatchFileContent: formatFile(`
+  tryCatchFileContent: removeIndentation(`
 const JsonResponse = require('./JsonResponse')
 
 let  TryCatch = function(handler){
@@ -292,22 +294,166 @@ this.handler = handler
 
     module.exports = TryCatch
 `),
-  routerFileContent: formatFile(`
+  routerFileContent: removeIndentation(`
 const express = require('express');
 const router = express.Router();
-const AuthHelper = require('./helper/JWTAuthHelper');
-const TryCatch = require('./helper/TryCatch');
-const Messages = require('./constants/Message');
 
 //imports here
 
 //code here
 router.get("/health-check", (req,res)=>{
   res.json("Server Health: OK");
-  })
+})
+
 module.exports = router;
-`),
-  firebaseControllerFile: formatFile(`
+  `),
+  // addIndexFileRouteContent: (modelName) => {
+  //   removeIndentation(`
+  //     const ${modelName.toLowerCase()}Routes = require('./${modelName.toLowerCase()}Routes');
+
+  //     router.use('/${modelName.toLowerCase()}', ${modelName.toLowerCase()}Routes);
+  //   `);
+  // },
+  actorRouterFileContent: (modelName) =>
+    removeIndentation(`
+      const express = require('express');
+      const router = express.Router();
+      const AuthHelper = require('../helper/JWTAuthHelper');
+      const TryCatch = require('../helper/TryCatch');
+      const Messages = require('../constants/Message');
+      const ${modelName.toLowerCase()}Controller = require('../controllers/${modelName.toLowerCase()}Controller');
+
+      //imports here
+
+      //code here
+
+      //Entity - ${modelName} --start
+      //Authentication - ${modelName}
+      router.post('/register', new TryCatch(${modelName.toLowerCase()}Controller.apiRegister).tryCatchGlobe());
+      router.post('/login', new TryCatch(${modelName.toLowerCase()}Controller.apiLogin).tryCatchGlobe());
+
+      //CRUD Operations - ${modelName}
+      router.post('/does-email-exists', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.doesEmailExist).tryCatchGlobe());
+      router.get('/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
+      router.get('/get-by-email/:email', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getByEmail).tryCatchGlobe());
+      router.get('/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
+      router.delete('/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
+      router.post("/update-by-id/:id", AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.updateById).tryCatchGlobe());
+      router.post("/update-by-email/:email", new TryCatch(${modelName.toLowerCase()}Controller.updateByEmail).tryCatchGlobe());
+      //Entity - ${modelName} - End
+
+      module.exports = router;
+    `),
+  nonActorRouterFileContent: (modelName) =>
+    removeIndentation(`
+      const express = require('express');
+      const router = express.Router();
+      const AuthHelper = require('../helper/JWTAuthHelper');
+      const TryCatch = require('../helper/TryCatch');
+      const Messages = require('../constants/Message');
+      const ${modelName.toLowerCase()}Controller = require('../controllers/${modelName.toLowerCase()}Controller');
+
+      //imports here
+
+      //code here
+
+      //Entity - ${modelName} --start
+      //CRUD Operations - ${modelName}
+      router.post('/create', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.create${modelName}).tryCatchGlobe());
+      router.get('/get-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getById).tryCatchGlobe());
+      router.get('/get-all', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.getAll${modelName}s).tryCatchGlobe());
+      router.delete('/delete-by-id/:id', AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.deleteById).tryCatchGlobe());
+      router.post("/update-by-id/:id", AuthHelper.verifyToken, new TryCatch(${modelName.toLowerCase()}Controller.updateById).tryCatchGlobe());
+      //Entity - ${modelName} - End
+
+      module.exports = router; 
+  `),
+  chatRouterFileContent: (modelName) =>
+    removeIndentation(`
+      const express = require('express');
+      const router = express.Router();
+      const AuthHelper = require('../helper/JWTAuthHelper');
+      const TryCatch = require('../helper/TryCatch');
+      const Messages = require('../constants/Message');
+      const chatController = require('../controllers/chatController');  
+
+      //imports here
+
+      //code here
+
+      //Entity - ${modelName} --start
+      router.post('/send-chat', AuthHelper.verifyToken, new TryCatch(chatController.sendChat).tryCatchGlobe());
+      router.get('/get-my-chat/:id/:chatContactId',  AuthHelper.verifyToken, new TryCatch(chatController.getChatConvo).tryCatchGlobe());
+      //Entity - ${modelName} - End
+
+      module.exports = router;
+    `),
+  fileUploadRouterFileContent: (modelName) =>
+    removeIndentation(`
+      const express = require('express');
+      const router = express.Router();
+      const AuthHelper = require('../helper/JWTAuthHelper');
+      const TryCatch = require('../helper/TryCatch');
+      const Messages = require('../constants/Message');
+      const uploadController = require('../controllers/uploadController'); 
+      const upload = require('../middleware/multer');
+
+      //imports here
+
+      //code here
+
+      //Entity - ${modelName} --start
+      // Add Single file to Cloudinary
+      router.post("/uploadSingleFile", AuthHelper.verifyToken, upload.single("image"), new TryCatch(uploadController.uploadSingleFile).tryCatchGlobe());
+
+      // Add Multiple files to cloudinary - {Array of Attachments}
+      router.post("/uploadMultipleFiles", AuthHelper.verifyToken, upload.array("attachments"), new TryCatch(uploadController.uploadMultipleFiles).tryCatchGlobe());
+
+      // Add files according to fields to cloudinary
+      // [
+      //   { name: 'avatar', maxCount: 1 },
+      //   { name: 'gallery', maxCount: 8 }
+      // ]
+      router.post("/uploadFiles",AuthHelper.verifyToken,upload.fields([{name: "userImage"},{name: "coverPhoto",}]),new TryCatch(uploadController.uploadFiles).tryCatchGlobe());
+
+      // Delete Single file from cloudinary
+      router.post("/deleteSingleFile", AuthHelper.verifyToken, new TryCatch(uploadController.deleteSingleFile).tryCatchGlobe());
+
+      // Delete Multiple files from cloudinary - {Array of Public Ids}
+      router.post("/deleteMultipleFiles", AuthHelper.verifyToken, new TryCatch(uploadController.deleteMultipleFiles).tryCatchGlobe());
+      //Entity - ${modelName} - End
+
+      module.exports = router;
+    `),
+  firebaseRouterFileContent: (modelName) =>
+    removeIndentation(`
+        const express = require('express');
+        const router = express.Router();
+        const AuthHelper = require('../helper/JWTAuthHelper');
+        const TryCatch = require('../helper/TryCatch');
+        const Messages = require('../constants/Message');
+        const firebaseController = require("../controllers/firebaseController")  
+
+        //imports here
+
+        //code here
+        //Firebase Push Notification Routes - Start
+        router.post("/sendNotificationToCustomDevice", AuthHelper.verifyToken,
+            new TryCatch(firebaseController.sendNotificationToCustomDevice).tryCatchGlobe());
+
+        router.post("/sendNotificationToTopic/:topic", AuthHelper.verifyToken, 
+            new TryCatch(firebaseController.sendNotificationToTopic).tryCatchGlobe());
+
+        router.post("/sendBatchNotificationsMultipleFCMS", AuthHelper.verifyToken,
+            new TryCatch(firebaseController.sendBatchNotificationsMultipleFCMS).tryCatchGlobe());
+
+        router.post("/sendNotificationsToMultipleTopics", AuthHelper.verifyToken,
+            new TryCatch(firebaseController.sendNotificationsToMultipleTopics).tryCatchGlobe());
+        //Firebase Push Notification Routes - End
+
+        module.exports = router;
+      `),
+  firebaseControllerFile: removeIndentation(`
 const admin = require("firebase-admin");
 const { firebase } = require("googleapis/build/src/apis/firebase");
 const JsonResponse = require("../helper/JsonResponse");
@@ -461,22 +607,9 @@ try {
 
 }
   });
-
-
-  // const failedNotifications = results.filter(
-  //   (result) => result.status === "error"
-  // );
-
-  // if (failedNotifications.length > 0) {
-  //   new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-
-  // }
-
-  // new JsonResponse(req, res).jsonSuccess(response, new Messages().PUSH_NOTIFICATION_SENT)
-
 }
 `),
-  uploadControllerFile: formatFile(`
+  uploadControllerFile: removeIndentation(`
 const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
 const jwt = require("jsonwebtoken");
@@ -632,7 +765,7 @@ exports.deleteMultipleFiles = async function (req, res) {
 };
 
     `),
-  cloudinaryHelperFileContent: formatFile(` 
+  cloudinaryHelperFileContent: removeIndentation(` 
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const Messages = require("../constants/Message");
@@ -710,12 +843,12 @@ module.exports = {
   deleteMultipleFilesFromCloudinary,
 };
   `),
-  uploadMiddlewareFileContent: formatFile(`
+  uploadMiddlewareFileContent: removeIndentation(`
 const multer = require("multer");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/images/");
+    cb(null, "public/uploads/");
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = new Date().getTime().toString();
@@ -728,10 +861,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 module.exports = upload;
-  `)
-  ,
-
-  nonActorControllerFileContent: (modelname) => formatFile(` 
+  `),
+  nonActorControllerFileContent: (modelname) =>
+    removeIndentation(` 
 const Messages = require("../constants/Message");
   const JsonResponse = require("../helper/JsonResponse");
   const TryCatch = require("../helper/TryCatch");
@@ -751,6 +883,11 @@ new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messag
 
 }
 
+exports.updateById = async function (req, res) {
+  let ${modelname.toLowerCase()} = new ${modelname}();
+  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.updateById(req.params.id, req.body);
+  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_UPDATED);
+};
 
 exports.getAll${modelname}s = async function (req, res) {
   let ${modelname.toLowerCase()} = new ${modelname} ()
@@ -765,7 +902,8 @@ await ${modelname.toLowerCase()}.deleteById()
 new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
 }
     `),
-  actorControllerFileContent: (modelname) => formatFile(` 
+  actorControllerFileContent: (modelname) =>
+    removeIndentation(` 
     const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
 const TryCatch = require("../helper/TryCatch");
@@ -860,6 +998,19 @@ exports.getByEmail = async function(req, res){
   new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_RECEIVED)
 }
 
+exports.updateById = async function (req, res) {
+  let ${modelname.toLowerCase()} = new ${modelname}();
+  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.updateById(req.params.id, req.body);
+  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_UPDATED);
+};
+
+exports.updateByEmail = async function (req, res) {
+  let ${modelname.toLowerCase()} = new ${modelname}();
+  let ${modelname.toLowerCase()}Doc = await ${modelname.toLowerCase()}.updateByEmail(req.params.email, req.body);
+  new JsonResponse(req, res).jsonSuccess(${modelname.toLowerCase()}Doc, new Messages().SUCCESSFULLY_UPDATED);
+};
+
+
 exports.getAll${modelname}s = async function(req, res){
   let ${modelname.toLowerCase()} = new ${modelname}()
   let ${modelname.toLowerCase()}s = await ${modelname.toLowerCase()}.getAll${modelname}s()
@@ -873,7 +1024,8 @@ exports.deleteById= async function(req, res){
  new JsonResponse(req, res).jsonSuccess(true, new Messages().SUCCESSFULLY_DELETED)
 }
     `),
-  nonActorModelFileContent: (modelName, nonActorAttributes) => formatFile(`
+  nonActorModelFileContent: (modelName, nonActorAttributes) =>
+    removeIndentation(`
                 const bcrypt = require("bcryptjs");
                 const Messages = require("../constants/Message");
                 const TryCatch = require("../helper/TryCatch");
@@ -906,6 +1058,23 @@ exports.deleteById= async function(req, res){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({_id: new ObjectId(id)})
                   return ${modelName.toLowerCase()}Doc
                 }
+
+                ${modelName}.prototype.updateById = async function (id, data) {
+                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOneAndUpdate(
+                    { _id: new ObjectId(id) },
+                    {
+                      $set: {
+                        ...data,
+                        updatedAt: new Date(),
+                      },
+                    },
+                    {
+                      returnDocument: "after",
+                    }
+                  );
+
+                  return ${modelName.toLowerCase()}Doc;
+                };
                 
                 ${modelName}.prototype.getAll${modelName}s = async function (){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.find({}).toArray()
@@ -919,7 +1088,8 @@ exports.deleteById= async function(req, res){
                 
                 module.exports = ${modelName};             
             `),
-  actorModelFileContent: (modelName, attributes) => formatFile(`
+  actorModelFileContent: (modelName, attributes) =>
+    removeIndentation(`
                 const bcrypt = require("bcryptjs");
                 const Messages = require("../constants/Message");
                 const TryCatch = require("../helper/TryCatch");
@@ -993,6 +1163,47 @@ exports.deleteById= async function(req, res){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOne({_id: new ObjectId(id)})
                   return ${modelName.toLowerCase()}Doc
                 }
+
+                ${modelName}.prototype.updateById = async function (id, data) {
+                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOneAndUpdate(
+                    { _id: new ObjectId(id) },
+                    {
+                      $set: {
+                        name: data.name,
+                        lName: data.lName,
+                        email: data.email,
+                        contactNumber: data.contactNumber,
+                        address: data.address,
+                        city: data.city,
+                        role: "${modelName.toLowerCase()}",
+                        updatedAt: new Date(),
+                      },
+                    },
+                    { returnDocument: "after" }
+                  );
+                  return ${modelName.toLowerCase()}Doc;
+                };
+
+                ${modelName}.prototype.updateByEmail = async function (email, data) {
+                  let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.findOneAndUpdate(
+                    { email: email },
+                    {
+                      $set: {
+                        name: data.name,
+                        lName: data.lName,
+                        email: data.email,
+                        contactNumber: data.contactNumber,
+                        address: data.address,
+                        city: data.city,
+                        role: "${modelName.toLowerCase()}",
+                        updatedAt: new Date(),
+                      },
+                    },
+                    { returnDocument: "after" }
+                  );
+                  return ${modelName.toLowerCase()}Doc;
+                };
+
                 
                 ${modelName}.prototype.getAll${modelName}s = async function (){
                   let ${modelName.toLowerCase()}Doc = await ${modelName.toLowerCase()}sCollection.find({}).toArray()
@@ -1007,7 +1218,7 @@ exports.deleteById= async function(req, res){
                 module.exports = ${modelName};             
             `),
 
-  chatModelFileContent: formatFile(`
+  chatModelFileContent: removeIndentation(`
     const chatsCollection = require('../db').db().collection("chats");
 
     const { ObjectId } = require('mongodb');
@@ -1055,7 +1266,7 @@ exports.deleteById= async function(req, res){
           
     module.exports = Chat
     `),
-  chatControllerFileContent: formatFile(`
+  chatControllerFileContent: removeIndentation(`
    
     const Messages = require("../constants/Message");
 const JsonResponse = require("../helper/JsonResponse");
@@ -1077,7 +1288,7 @@ exports.getChatConvo = async function(req, res){
     
     `),
 
-  dockerFileContent: formatFile(`FROM node
+  dockerFileContent: removeIndentation(`FROM node
 
 WORKDIR /app
 
@@ -1089,7 +1300,85 @@ COPY . .
 
 EXPOSE 4000
 
-CMD ["npm","run", "server"]`)
-};
+CMD ["npm","run", "server"]`),
 
-module.exports = fileContent;
+
+  llmUsingOllamaRouterContent: removeIndentation(`
+    const express = require('express');
+    const router = express.Router();
+    const AuthHelper = require('../helper/JWTAuthHelper');
+    const TryCatch = require('../helper/TryCatch');
+    const Messages = require('../constants/Message');
+    const LlmHelperOllama = require('../helper/LlmHelperOllama');
+
+ 
+
+    //imports here
+
+    //code here
+
+    //LlmUsingOllama --start
+
+    router.post("/ask-llm", AuthHelper.verifyToken, new TryCatch(LlmHelperOllama.llmModel).tryCatchGlobe())
+
+    //LlmUsingOllama --end
+    
+    module.exports = router;
+  `),
+
+  llmUsingOllamaHelperFileContent: removeIndentation(` 
+
+const { ChatOllama } = require("@langchain/ollama")
+const { ChatPromptTemplate } = require("@langchain/core/prompts")
+const { SystemMessage, HumanMessage, AIMessage } = require("@langchain/core/messages")
+const JsonResponse = require("./JsonResponse")
+const Messages = require("../constants/Message")
+const axios = require("axios")
+const conversationHistories = new Map()
+
+const getOrCreateHistory = sessionId => {
+  if (!conversationHistories.has(sessionId)) {
+    // Initialize conversation history with the system message if it doesn't exist
+      conversationHistories.set(sessionId, [new SystemMessage("You are a friend of anyone who talks to you! Your name is Servi")]) //Input The system prompt here.
+  }
+  return conversationHistories.get(sessionId)
+}
+
+exports.llmModel = async function (req, res) {
+  const chatModel = new ChatOllama({
+    baseUrl: "http://localhost:11434", // Default value
+    model: "llama3.1" //Change the name of the model to the one you want to use.
+  })
+  console.log(req.apiUser._id)
+  const sessionId = req.apiUser._id // Using a header for session ID;
+  const conversationHistory = getOrCreateHistory(sessionId)
+
+  const sendMessage = async input => {
+    // Add user input to conversation history
+    conversationHistory.push(new HumanMessage(input))
+
+    // Create the prompt with the current conversation history
+    const prompt = ChatPromptTemplate.fromMessages(conversationHistory)
+
+    // Call the model with the updated prompt
+    const response = await prompt.pipe(chatModel).invoke({})
+    // Add model's response to the conversation history
+    conversationHistory.push(new AIMessage(response.content))
+    // Return the response content
+    return response.content
+  }
+
+  // Extract the user input from the request body
+  console.log(req.body.input)
+  const userInput = req.body.input
+
+  // Send the user input to the model and get the response
+  const modelResponse = await sendMessage(userInput)
+  // res.status(200).json({ response: modelResponse })
+
+  new JsonResponse(req, res).jsonSuccess(modelResponse, new Messages().SUCCESSFULLY_GENERATED)
+}
+
+  `),
+};
+export default fileContent;

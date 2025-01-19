@@ -1,4 +1,4 @@
-const readline = require("readline");
+import readline from 'readline';
 
 let rl;
 
@@ -12,4 +12,4 @@ function initializeReadline() {
     return rl;
 }
 
-module.exports = { initializeReadline, rl };
+export  { initializeReadline, rl };
