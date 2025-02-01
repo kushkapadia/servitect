@@ -35,6 +35,12 @@ const llmUsingOllamaDependencies = [
   { name: "langchain", isDev: false },
 ];
 
+
+// Frontend Dependencies (Note: Format of the dependencies is different)
+const frontendUsingReactDependencies = [
+  { name: "npx create-react-app myapp --legacy-peer-deps", isDev: false },
+];
+
 export {
   dependencies,
   fileUploadDependencies,
@@ -42,4 +48,5 @@ export {
   whatsappDependencies,
   nodeMailerDependencies,
   llmUsingOllamaDependencies,
+  frontendUsingReactDependencies
 };
