@@ -30,7 +30,7 @@ const installCmd = chalk.gray('npm install -g servitect');
 const devInfo = `Developers: ${chalk.cyan(terminalLink('Kush Kapadia', 'https://github.com/kushkapadia'))} | ${chalk.cyan(terminalLink('Mit Shah', 'https://github.com/mitshah2406'))} | ${chalk.cyan(terminalLink('Atharva Jadhav', 'https://github.com/atharva884'))}`;
 
 // Create the version and other info
-const version = chalk.gray('v1.2.4');
+// const version = chalk.gray('v1.2.4');
 const subtitle = chalk.yellow('Server + Architect = Servitect');
 
 // Combine all elements
@@ -43,8 +43,8 @@ ${packageInfo}
 ${installCmd}
 
 ${devInfo}
-${version}
 `;
+// ${version}
 
 // Create a box around everything
 const boxedHeader = boxen(header, {
