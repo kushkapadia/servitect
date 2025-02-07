@@ -38,7 +38,11 @@ const llmUsingOllamaDependencies = [
 
 // Frontend Dependencies (Note: Format of the dependencies is different)
 const frontendUsingReactDependencies = [
-  { name: "npx create-react-app myapp --legacy-peer-deps", isDev: false },
+  { name: "flutter create my_app", isDev: false },
+];
+
+const frontendUsingFlutterDependencies = [
+  { name: "flutter create myapp", isDev: false },
 ];
 
 export {
@@ -48,5 +52,6 @@ export {
   whatsappDependencies,
   nodeMailerDependencies,
   llmUsingOllamaDependencies,
-  frontendUsingReactDependencies
+  frontendUsingReactDependencies,
+  frontendUsingFlutterDependencies,
 };
