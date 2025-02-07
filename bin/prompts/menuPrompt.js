@@ -5,6 +5,7 @@ import process from "process";
 import figureSet from "figures";
 import * as fs from "fs/promises";
 import initialize from "../helper/initialize.js";
+import addFrontendUsingFlutterModule from "../modules/frontendModule.js";
 
 
 async function promptUser(projectDirPath) {
@@ -31,6 +32,35 @@ async function promptUser(projectDirPath) {
       return "1"
     }
 
+if(parsedData.isFrontendInitialized === false){
+  const frontendOption = await frontendSubMenuPrompt();
+  switch (frontendOption) {
+    case "yes":
+      try {
+        await addFrontendUsingFlutterModule(projectDirPath);
+        //write in servitect db file
+        parsedData.isFrontendInitialized = true;
+        parsedData.frontendType = "flutter";
+        await fs.writeFile(servitectDB, JSON.stringify(parsedData, null, 2));
+      } catch (err) {
+        console.error(
+          `${ansiColors.red(figures.cross)} Error during initialization2:`,
+          err.message
+        );
+      }
+      break;
+    case "no": //when control here. The program ends. Check return statements properly @Atharva884
+      parsedData.isFrontendInitialized = "notNeeded";
+      await fs.writeFile(servitectDB, JSON.stringify(parsedData, null, 2));
+      console.log("Frontend is not initialized");
+      // return "2";
+      break;
+    case "back":
+      return "12";
+  }
+  return "2";
+}
+
     const answer = await select({
       theme: {
         prefix: ansiColors.green(figureSet.nodejs),
@@ -52,91 +82,92 @@ async function promptUser(projectDirPath) {
         //   ),
         // },
 //change the numbering if the planned thing works
-        {
-          name: "Initialize Frontend",
-          value: "2",
-          description: ansiColors.gray(
-            "Use this to initialize a new MVC project"
-          ),
-        },
 
-        {
-          name: "Add Features",
-          value: "3",
-          description: ansiColors.gray(
-            "Use this to initialize a new MVC project"
-          ),
-        },
         // {
-        //   name: "Create New Actor Model",
+        //   name: "Do you also want to add Frontend using Flutter. (Press enter to select)",
         //   value: "2",
         //   description: ansiColors.gray(
-        //     "Use this to create a new actor model (First Letter Uppercase) (eg- User, Admin,etc)"
+        //     "Use this to initialize a new MVC project"
         //   ),
         // },
+
         // {
-        //   name: "Create New Entity Model",
+        //   name: "Add Features",
         //   value: "3",
         //   description: ansiColors.gray(
-        //     "Use this to create a new entity model (First Letter Uppercase) (eg - Book, Product,etc)"
+        //     "Use this to initialize a new MVC project"
         //   ),
         // },
-        // {
-        //   name: "Add Chat Module",
-        //   value: "4",
-        //   description: ansiColors.gray("Use this to create a chat module"),
-        // },
-        // {
-        //   name: "Add File Upload Module",
-        //   value: "5",
-        //   description: ansiColors.gray(
-        //     "Use this to create a file upload module"
-        //   ),
-        // },
-        // {
-        //   name: "Add Firebase For Firebase Cloud Messaging",
-        //   value: "6",
-        //   description: ansiColors.gray(
-        //     "Use this to create API routes for Firebase Cloud Messaging (FCM) for mobile push notifications"
-        //   ),
-        // },
-        // {
-        //   name: "Add Whatsapp Bot Messaging",
-        //   value: "7",
-        //   description: ansiColors.gray(
-        //     "Use this to create API routes for Whatsapp Bot Messaging"
-        //   ),
-        // },
-        // {
-        //   name: "Add Nodemailer",
-        //   value: "8",
-        //   description: ansiColors.gray(
-        //     "Use this to add Nodemailer functionality for sending emails"
-        //   ),
-        // },
-        // {
-        //   name: "Add Docker Setup",
-        //   value: "9",
-        //   description: ansiColors.gray(
-        //     "Use this to add Docker setup for containerization"
-        //   ),
-        // },
-        // {
-        //   name: "Add Large Language Model (LLM) Implementation",
-        //   value: "10",
-        //   description: ansiColors.gray(
-        //     "Use this to add LLM setup for text generation"
-        //   ),
-        // },
+        {
+          name: "Create New Actor Model",
+          value: "3",
+          description: ansiColors.gray(
+            "Use this to create a new actor model (First Letter Uppercase) (eg- User, Admin,etc)"
+          ),
+        },
+        {
+          name: "Create New Entity Model",
+          value: "4",
+          description: ansiColors.gray(
+            "Use this to create a new entity model (First Letter Uppercase) (eg - Book, Product,etc)"
+          ),
+        },
+        {
+          name: "Add Chat Module",
+          value: "5",
+          description: ansiColors.gray("Use this to create a chat module"),
+        },
+        {
+          name: "Add File Upload Module",
+          value: "6",
+          description: ansiColors.gray(
+            "Use this to create a file upload module"
+          ),
+        },
+        {
+          name: "Add Firebase For Firebase Cloud Messaging",
+          value: "7",
+          description: ansiColors.gray(
+            "Use this to create API routes for Firebase Cloud Messaging (FCM) for mobile push notifications"
+          ),
+        },
+        {
+          name: "Add Whatsapp Bot Messaging",
+          value: "8",
+          description: ansiColors.gray(
+            "Use this to create API routes for Whatsapp Bot Messaging"
+          ),
+        },
+        {
+          name: "Add Nodemailer",
+          value: "9",
+          description: ansiColors.gray(
+            "Use this to add Nodemailer functionality for sending emails"
+          ),
+        },
+        {
+          name: "Add Docker Setup",
+          value: "10",
+          description: ansiColors.gray(
+            "Use this to add Docker setup for containerization"
+          ),
+        },
+        {
+          name: "Add Large Language Model (LLM) Implementation",
+          value: "11",
+          description: ansiColors.gray(
+            "Use this to add LLM setup for text generation"
+          ),
+        },
         new Separator(),
         {
           name: ansiColors.red.bold("Exit"),
-          value: "11",
+          value: "12",
           description: ansiColors.gray("Use this to exit the CLI"),
         },
       ],
     });
-
+  
     return answer;
   } catch (error) {
     if (error instanceof Error && error.name === "ExitPromptError") {
@@ -192,24 +223,20 @@ async function frontendSubMenuPrompt() {
       },
     },
     message: ansiColors.magentaBright.italic(
-      "\n\nSelect the Frontend implementation"
+      "\n\nWould you like to add a Flutter frontend as well? (This choice is final and cannot be changed later.)"
     ),
     choices: [
       {
-        name: "Using React.js",
-        value: "react",
+        name: "Yes",
+        value: "yes",
         description: ansiColors.gray("Use Ollama for text generation"),
       },
       {
-        name: "Using Next.js",
-        value: "next",
+        name: "No",
+        value: "no",
         description: ansiColors.gray("Use next for text generation"),
       },
-      {
-        name: "Using Flutter",
-        value: "flutter",
-        description: ansiColors.gray("Use flutter for text generation"),
-      },
+   
       new Separator(),
       {
         name: ansiColors.red.bold("Go Back"),
