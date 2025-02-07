@@ -1,6 +1,6 @@
 {
   "name": "servitect",
-  "version": "1.2.7",
+  "version": "1.2.5",
   "preferGlobal": true,
   "description": "servitect stands for Server-Architect. A one-click Node.js MVC Server generator",
   "main": "./bin/MVCBuilder.js",
@@ -18,15 +18,28 @@
     "url": "git+https://github.com/kushkapadia/MVCGenerator.git"
   },
   "keywords": [
-    
-      "MVC", "server-generator", "backend-generator", "nodejs-server", 
-      "expressjs-generator", "mongodb-backend", "jwt-authentication", 
-      "firebase-integration", "nodemailer", "whatsapp-cloud-api", 
-      "dockerized-app", "actor-model", "menu-driven-tool", 
-      "llm", "scalable-backend", "modern-backend", 
-      "fullstack-nodejs", "cli-backend-generator", "developer-tool", 
-      "backend-automation", "npm-tool", "open-source"
-    
+    "MVC",
+    "server-generator",
+    "backend-generator",
+    "nodejs-server",
+    "expressjs-generator",
+    "mongodb-backend",
+    "jwt-authentication",
+    "firebase-integration",
+    "nodemailer",
+    "whatsapp-cloud-api",
+    "dockerized-app",
+    "actor-model",
+    "menu-driven-tool",
+    "llm",
+    "scalable-backend",
+    "modern-backend",
+    "fullstack-nodejs",
+    "cli-backend-generator",
+    "developer-tool",
+    "backend-automation",
+    "npm-tool",
+    "open-source"
   ],
   "author": "Elite Coders",
   "license": "ISC",
@@ -48,6 +61,7 @@
     "gradient-string": "^3.0.0",
     "inquirer-file-selector": "^0.6.1",
     "is-installed-globally": "^1.0.0",
+    "latest-version": "^9.0.0",
     "ora": "^8.1.1",
     "progress": "^2.0.3",
     "servitect": "file:",
