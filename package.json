@@ -1,6 +1,7 @@
 {
   "name": "servitect",
   "version": "1.2.6",
+  "preferGlobal": true,
   "description": "servitect stands for Server-Architect. A one-click Node.js MVC Server generator",
   "main": "./bin/MVCBuilder.js",
   "type": "module",
