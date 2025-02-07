@@ -7,7 +7,7 @@ import { promisify } from "util";
 import fs from "fs";
 import { spawn } from "child_process";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
+import path from "path";
 // For Initialization
 async function showProgressAnimation() {
   const spinner = ora("Setting up your project...").start();
@@ -102,8 +102,64 @@ const execPromise = promisify(exec);
 // Sleep function
 // const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// async function createWithAnimation(dependencies, dir) {
+//   console.log("Function is being called");
+// dir = dir + "/flutterfrontend";
+// console.log("frontend path: " + dir);
+//   const spinner = ora("Creating Frontend...").start();
+
+//   try {
+//     // Ensure the directory exists
+//     if (!fs.existsSync(dir)) {
+//       fs.mkdirSync(dir, { recursive: true });
+//       console.log(chalk.green(`Created directory: ${dir}`));
+//     }
+
+//     for (const dep of dependencies) {
+//       const { name } = dep;
+//       spinner.text = chalk.cyanBright(`Executing ${name}...`);
+
+//       // Use spawn instead of exec for better shell command handling
+//       await new Promise((resolve, reject) => {
+//         const commandParts = name.split(" "); // Split the command into parts if needed
+//         const command = spawn(commandParts[0], commandParts.slice(1), { cwd: dir });
+
+//         command.stdout.on("data", (data) => {
+//           console.log(data.toString()); // Optionally print stdout
+//         });
+
+//         command.stderr.on("data", (data) => {
+//           console.error(data.toString()); // Optionally print stderr
+//         });
+
+//         command.on("close", (code) => {
+//           if (code !== 0) {
+//             reject(new Error(`Command failed with code ${code}`));
+//           } else {
+//             resolve();
+//           }
+//         });
+//       });
+
+//       // Sleep between commands for a smooth animation
+//       await sleep(300);
+//     }
+
+//     spinner.succeed(chalk.greenBright("Package installation completed!"));
+//   } catch (error) {
+//     spinner.fail(chalk.red(`Error occurred during package installation: ${error.message}`));
+//     console.error("Detailed error:", error);
+//   } finally {
+//     spinner.stop();
+//   }
+// }
+
 async function createWithAnimation(dependencies, dir) {
   console.log("Function is being called");
+
+  // Ensure dir is absolute to avoid issues
+  dir = path.resolve(dir, "flutterfrontend");
+  console.log("Frontend path: " + dir);
 
   const spinner = ora("Creating Frontend...").start();
 
@@ -117,19 +173,18 @@ async function createWithAnimation(dependencies, dir) {
     for (const dep of dependencies) {
       const { name } = dep;
       spinner.text = chalk.cyanBright(`Executing ${name}...`);
+      console.log(chalk.yellow(`Running command: ${name} in ${dir}`));
 
-      // Use spawn instead of exec for better shell command handling
+      // Execute command properly
       await new Promise((resolve, reject) => {
-        const commandParts = name.split(" "); // Split the command into parts if needed
-        const command = spawn(commandParts[0], commandParts.slice(1), { cwd: dir });
-
-        command.stdout.on("data", (data) => {
-          console.log(data.toString()); // Optionally print stdout
+        const commandParts = name.split(" ");
+        const command = spawn(commandParts[0], commandParts.slice(1), {
+          cwd: dir, // Corrected working directory
+          shell: true, // Enables shell execution (important for Mac)
         });
 
-        command.stderr.on("data", (data) => {
-          console.error(data.toString()); // Optionally print stderr
-        });
+        command.stdout.on("data", (data) => console.log(data.toString()));
+        command.stderr.on("data", (data) => console.error(data.toString()));
 
         command.on("close", (code) => {
           if (code !== 0) {
@@ -141,7 +196,7 @@ async function createWithAnimation(dependencies, dir) {
       });
 
       // Sleep between commands for a smooth animation
-      await sleep(300);
+      await new Promise((res) => setTimeout(res, 300));
     }
 
     spinner.succeed(chalk.greenBright("Package installation completed!"));
