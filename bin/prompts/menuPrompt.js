@@ -1,10 +1,36 @@
 import { select, Separator } from "@inquirer/prompts";
+import figures from "figures";
 import ansiColors from "ansi-colors";
 import process from "process";
 import figureSet from "figures";
+import * as fs from "fs/promises";
+import initialize from "../helper/initialize.js";
 
-async function promptUser() {
+
+async function promptUser(projectDirPath) {
   try {
+    const servitectDB = projectDirPath + "/servitectDB.json";
+    //read the above file
+    const servitectDBData = await fs.readFile(servitectDB, "utf8");
+   
+    let parsedData = JSON.parse(servitectDBData);
+    //check if the backend is initialized
+    if (parsedData.isBackendInitialized === false) {
+      try {
+        
+        await initialize(projectDirPath);
+        //update the file
+        parsedData.isBackendInitialized = true;
+        await fs.writeFile(servitectDB, JSON.stringify(parsedData, null, 2));
+      } catch (err) {
+        console.error(
+          `${ansiColors.red(figures.cross)} Error during initialization1:`,
+          err.message
+        );
+      }
+      return "1"
+    }
+
     const answer = await select({
       theme: {
         prefix: ansiColors.green(figureSet.nodejs),
@@ -18,14 +44,14 @@ async function promptUser() {
       loop: false,
       default: "1",
       choices: [
-        {
-          name: "Initialize Backend",
-          value: "1",
-          description: ansiColors.gray(
-            "Use this to initialize a new MVC project"
-          ),
-        },
-
+        // {
+        //   name: "Initialize Backend",
+        //   value: "1",
+        //   description: ansiColors.gray(
+        //     "Use this to initialize a new MVC project"
+        //   ),
+        // },
+//change the numbering if the planned thing works
         {
           name: "Initialize Frontend",
           value: "2",
@@ -202,3 +228,9 @@ process.on("SIGINT", () => {
 
 export default promptUser;
 export { llmSubMenuPrompt, frontendSubMenuPrompt };
+
+
+
+//servitec mvc-create --> projectfolder -->if(locafile isInitalized: false) then run initailizer, else show other options
+
+//project folder/servitectdb.json ( isInitalized:false)

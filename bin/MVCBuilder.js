@@ -2,6 +2,8 @@
 import { exit } from "process";
 import displayHeader from "./header/header.js";
 import promptUser, { frontendSubMenuPrompt, llmSubMenuPrompt } from "./prompts/menuPrompt.js";
+import * as fs from "fs/promises";
+import chalk from "chalk";
 import figures from "figures";
 import ansiColors from "ansi-colors";
 import createActorModel from "./modules/actorModule.js";
@@ -13,7 +15,6 @@ import addWhatsappModule from "./modules/whatsappModule.js";
 import addNodemailerModule from "./modules/nodemailerModule.js";
 import addDockerModule from "./modules/dockerModule.js";
 import addLLMUsingOllamaModule from "./modules/ollamaModule.js";
-import initialize from "./helper/initialize.js";
 import selectAndCreateProjectDir from "./helper/initProjectDir.js";
 import addFrontendUsingReactModule from "./modules/frontendModule.js";
 
@@ -42,27 +43,28 @@ try {
   await selectAndCreateProjectDir(projectDirPath);
 }
 
+
+console.log(displayHeader);
+
+menu();
+
 async function menu() {
-  let answer = await promptUser();
+  let answer = await promptUser(projectDirPath);
+  
   switch (answer) {
     case "1":
-      try {
-        await initialize(projectDirPath);
-      } catch (err) {
-        console.error(
-          `${ansiColors.red(figures.cross)} Error during initialization1:`,
-          err.message
-        );
-      }
+      console.log(
+        chalk.greenBright(`${chalk.greenBright(figures.tick)} Initialization completed!`)
+      );
       break;
 
-      case "2":
-         const frontendOption = await frontendSubMenuPrompt();
+    case "2":
+      const frontendOption = await frontendSubMenuPrompt();
 
       switch (frontendOption) {
         case "react":
           try {
-           const frontendDirPath = projectDirPath + "/frontend";
+            const frontendDirPath = projectDirPath + "/frontend";
             console.log(frontendDirPath);
             await addFrontendUsingReactModule(frontendDirPath);
           } catch (err) {
@@ -88,107 +90,107 @@ async function menu() {
           break;
       }
 
-    // case "2":
-    //   try {
-    //     await createActorModel(
-    //       content,
-    //       attributes,
-    //       actorModelFileContent,
-    //       ModelFileContent,
-    //       projectDirPath
-    //     );
-    //   } catch (err) {
-    //     console.error(
-    //       `${ansiColors.red(figures.cross)} Error creating actor model:`,
-    //       err.message
-    //     );
-    //   }
-    //   break;
+      // case "2":
+      //   try {
+      //     await createActorModel(
+      //       content,
+      //       attributes,
+      //       actorModelFileContent,
+      //       ModelFileContent,
+      //       projectDirPath
+      //     );
+      //   } catch (err) {
+      //     console.error(
+      //       `${ansiColors.red(figures.cross)} Error creating actor model:`,
+      //       err.message
+      //     );
+      //   }
+      //   break;
 
-    // case "3":
-    //   try {
-    //     await createModel(
-    //       content,
-    //       ModelFileContent,
-    //       nonActorAttributes,
-    //       projectDirPath
-    //     );
-    //   } catch (err) {
-    //     console.error(
-    //       `${ansiColors.red(figures.cross)} Error creating model:`,
-    //       err.message
-    //     );
-    //   }
-    //   break;
+      // case "3":
+      //   try {
+      //     await createModel(
+      //       content,
+      //       ModelFileContent,
+      //       nonActorAttributes,
+      //       projectDirPath
+      //     );
+      //   } catch (err) {
+      //     console.error(
+      //       `${ansiColors.red(figures.cross)} Error creating model:`,
+      //       err.message
+      //     );
+      //   }
+      //   break;
 
-    // case "4":
-    //   try {
-    //     await addChatModule(projectDirPath);
-    //   } catch (err) {
-    //     console.error(
-    //       `${ansiColors.red(figures.cross)} Error creating chat module:`,
-    //       err.message
-    //     );
-    //   }
-    //   break;
+      // case "4":
+      //   try {
+      //     await addChatModule(projectDirPath);
+      //   } catch (err) {
+      //     console.error(
+      //       `${ansiColors.red(figures.cross)} Error creating chat module:`,
+      //       err.message
+      //     );
+      //   }
+      //   break;
 
-    // case "5":
-    //   try {
-    //     await addUploadModule(projectDirPath);
-    //   } catch (err) {
-    //     console.error(
-    //       `${ansiColors.red(figures.cross)} Error creating upload module:`,
-    //       err.message
-    //     );
-    //   }
-    //   break;
+      // case "5":
+      //   try {
+      //     await addUploadModule(projectDirPath);
+      //   } catch (err) {
+      //     console.error(
+      //       `${ansiColors.red(figures.cross)} Error creating upload module:`,
+      //       err.message
+      //     );
+      //   }
+      //   break;
 
-    // case "6":
-    //   try {
-    //     console.log(projectDirPath);
-    //     await addFirebaseModule(projectDirPath);
-    //   } catch (err) {
-    //     console.error(
-    //       `${ansiColors.red(figures.cross)} Error adding firebase module:`,
-    //       err.message
-    //     );
-    //   }
-    //   break;
+      // case "6":
+      //   try {
+      //     console.log(projectDirPath);
+      //     await addFirebaseModule(projectDirPath);
+      //   } catch (err) {
+      //     console.error(
+      //       `${ansiColors.red(figures.cross)} Error adding firebase module:`,
+      //       err.message
+      //     );
+      //   }
+      //   break;
 
-    // case "7":
-    //   try {
-    //     await addWhatsappModule(projectDirPath);
-    //   } catch (err) {
-    //     console.error(
-    //       `${ansiColors.red(figures.cross)} Error adding whatsapp module:`,
-    //       err.message
-    //     );
-    //   }
-    //   break;
+      // case "7":
+      //   try {
+      //     await addWhatsappModule(projectDirPath);
+      //   } catch (err) {
+      //     console.error(
+      //       `${ansiColors.red(figures.cross)} Error adding whatsapp module:`,
+      //       err.message
+      //     );
+      //   }
+      //   break;
 
-    // case "8":
-    //   try {
-    //     await addNodemailerModule(projectDirPath);
-    //   } catch (err) {
-    //     console.error(
-    //       `${ansiColors.red(figures.cross)} Error adding nodemailer:`,
-    //       err.message
-    //     );
-    //   }
-    //   break;
+      // case "8":
+      //   try {
+      //     await addNodemailerModule(projectDirPath);
+      //   } catch (err) {
+      //     console.error(
+      //       `${ansiColors.red(figures.cross)} Error adding nodemailer:`,
+      //       err.message
+      //     );
+      //   }
+      //   break;
 
-    // case "9":
-    //   try {
-    //     await addDockerModule(projectDirPath);
-    //   } catch (err) {
-    //     console.error(
-    //       `${ansiColors.red(figures.cross)} Error adding docker setup:`,
-    //       err.message
-    //     );
-    //   }
-    //   break;
+      // case "9":
+      //   try {
+      //     await addDockerModule(projectDirPath);
+      //   } catch (err) {
+      //     console.error(
+      //       `${ansiColors.red(figures.cross)} Error adding docker setup:`,
+      //       err.message
+      //     );
+      //   }
+      //   break;
 
-    // case "10":
+      // case "10":
       // const llmOption = await llmSubMenuPrompt();
 
       // switch (llmOption) {
@@ -231,8 +233,6 @@ async function menu() {
   }
 }
 
-console.log(displayHeader);
 
-menu();
 
 export default menu;
