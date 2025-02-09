@@ -35,14 +35,13 @@ const llmUsingOllamaDependencies = [
   { name: "langchain", isDev: false },
 ];
 
-
 // Frontend Dependencies (Note: Format of the dependencies is different)
 const frontendUsingReactDependencies = [
   { name: "flutter create my_app", isDev: false },
 ];
 
 const frontendUsingFlutterDependencies = [
-  { name: "flutter create myapp", isDev: false },
+  { name: "flutter create flutter_frontend", isDev: false },
 ];
 
 export {

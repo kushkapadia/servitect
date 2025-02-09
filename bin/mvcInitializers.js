@@ -52,7 +52,7 @@ const initializers = {
 
     const CONNECTION_STRING = await input({
       message: "Enter the mongodb connection string:",
-      default: "",
+      default: "mongodb://localhost:27017",
     });
     await fs.appendFile(
       `${projectDirPath}/.env`,

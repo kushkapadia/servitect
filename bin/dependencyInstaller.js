@@ -19,7 +19,9 @@ async function showProgressAnimation() {
   // Stop the spinner and show completion
   spinner.stop();
   console.log(
-    chalk.greenBright(`${chalk.greenBright(figures.tick)} Configuration completed!`)
+    chalk.greenBright(
+      `${chalk.greenBright(figures.tick)} Configuration completed!`
+    )
   );
 }
 
@@ -62,7 +64,9 @@ async function installWithAnimation(dependencies, dir) {
   // Stop the spinner and show completion
   spinner.stop();
   console.log(
-    chalk.greenBright(`${chalk.greenBright(figures.tick)} Package installation completed!`)
+    chalk.greenBright(
+      `${chalk.greenBright(figures.tick)} Package installation completed!`
+    )
   );
 }
 
@@ -158,8 +162,8 @@ async function createWithAnimation(dependencies, dir) {
   console.log("Function is being called");
 
   // Ensure dir is absolute to avoid issues
-  dir = path.resolve(dir, "flutterfrontend");
-  console.log("Frontend path: " + dir);
+  // dir = path.resolve(dir, "flutterfrontend");
+  // console.log("Frontend path: " + dir);
 
   const spinner = ora("Creating Frontend...").start();
 
@@ -201,10 +205,75 @@ async function createWithAnimation(dependencies, dir) {
 
     spinner.succeed(chalk.greenBright("Package installation completed!"));
   } catch (error) {
-    spinner.fail(chalk.red(`Error occurred during package installation: ${error.message}`));
+    spinner.fail(
+      chalk.red(`Error occurred during package installation: ${error.message}`)
+    );
     console.error("Detailed error:", error);
   } finally {
     spinner.stop();
   }
 }
-export { showProgressAnimation, installWithAnimation, showProgressMessages, createWithAnimation };
+
+// async function createWithAnimation(dependencies, dir) {
+//   console.log("Function is being called");
+
+//   // Move one level up and create "flutterfrontend"
+//   const parentDir = path.resolve(dir, ".."); // Go one level up
+//   dir = path.join(parentDir, "flutterfrontend"); // Append "flutterfrontend"
+//   console.log("Frontend path: " + dir);
+
+//   const spinner = ora("Creating Frontend...").start();
+
+//   try {
+//     // Ensure the directory exists
+//     if (!fs.existsSync(dir)) {
+//       fs.mkdirSync(dir, { recursive: true });
+//       console.log(chalk.green(`Created directory: ${dir}`));
+//     }
+
+//     for (const dep of dependencies) {
+//       const { name } = dep;
+//       spinner.text = chalk.cyanBright(`Executing ${name}...`);
+//       console.log(chalk.yellow(`Running command: ${name} in ${dir}`));
+
+//       // Execute command properly
+//       await new Promise((resolve, reject) => {
+//         const commandParts = name.split(" ");
+//         const command = spawn(commandParts[0], commandParts.slice(1), {
+//           cwd: dir, // Use corrected directory
+//           shell: true, // Enables shell execution (important for Mac)
+//         });
+
+//         command.stdout.on("data", (data) => console.log(data.toString()));
+//         command.stderr.on("data", (data) => console.error(data.toString()));
+
+//         command.on("close", (code) => {
+//           if (code !== 0) {
+//             reject(new Error(`Command failed with code ${code}`));
+//           } else {
+//             resolve();
+//           }
+//         });
+//       });
+
+//       // Sleep between commands for a smooth animation
+//       await new Promise((res) => setTimeout(res, 300));
+//     }
+
+//     spinner.succeed(chalk.greenBright("Package installation completed!"));
+//   } catch (error) {
+//     spinner.fail(
+//       chalk.red(`Error occurred during package installation: ${error.message}`)
+//     );
+//     console.error("Detailed error:", error);
+//   } finally {
+//     spinner.stop();
+//   }
+// }
+
+export {
+  showProgressAnimation,
+  installWithAnimation,
+  showProgressMessages,
+  createWithAnimation,
+};

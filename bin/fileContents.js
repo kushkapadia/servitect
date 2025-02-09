@@ -131,7 +131,8 @@ app.use("${routePrefix}", routes);
 module.exports = app;
 `),
   envFileContent: (PORT, CONNECTION_STRING) =>
-    `PORT=${!PORT || isNaN(PORT) || PORT < 1 || PORT > 65535 ? "4000" : PORT
+    `PORT=${
+      !PORT || isNaN(PORT) || PORT < 1 || PORT > 65535 ? "4000" : PORT
     }\nCONNECTION_STRING=${CONNECTION_STRING}\nJWTSECRET=qwertyqwertyqwerty`,
   gitIgnoreFileContent: `/node_modules\n.env`,
   packageJsonFileContent: `{
@@ -252,7 +253,7 @@ exports.verifyToken = function (req, res, next) {
     console.log(req.apiUser)  
     next()
   } catch(error){
-console.log("here")
+console.log("No JWT Token passed/Invalid JWT Token")
     res.locals.data = {
         isVaild: false, 
         authorizationFailed: true,
@@ -1301,7 +1302,6 @@ COPY . .
 EXPOSE 4000
 
 CMD ["npm","run", "server"]`),
-
 
   llmUsingOllamaRouterContent: removeIndentation(`
     const express = require('express');

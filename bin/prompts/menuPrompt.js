@@ -6,19 +6,19 @@ import figureSet from "figures";
 import * as fs from "fs/promises";
 import initialize from "../helper/initialize.js";
 import addFrontendUsingFlutterModule from "../modules/frontendModule.js";
-
+import menu from "../MVCBuilder.js";
+// import initialFlutterSetUp from "../modules/flutter/initialize.js";
 
 async function promptUser(projectDirPath) {
   try {
     const servitectDB = projectDirPath + "/servitectDB.json";
     //read the above file
     const servitectDBData = await fs.readFile(servitectDB, "utf8");
-   
+
     let parsedData = JSON.parse(servitectDBData);
     //check if the backend is initialized
     if (parsedData.isBackendInitialized === false) {
       try {
-        
         await initialize(projectDirPath);
         //update the file
         parsedData.isBackendInitialized = true;
@@ -29,37 +29,47 @@ async function promptUser(projectDirPath) {
           err.message
         );
       }
-      return "1"
+      return "1";
     }
 
-if(parsedData.isFrontendInitialized === false){
-  const frontendOption = await frontendSubMenuPrompt();
-  switch (frontendOption) {
-    case "yes":
-      try {
-        await addFrontendUsingFlutterModule(projectDirPath);
-        //write in servitect db file
-        parsedData.isFrontendInitialized = true;
-        parsedData.frontendType = "flutter";
-        await fs.writeFile(servitectDB, JSON.stringify(parsedData, null, 2));
-      } catch (err) {
-        console.error(
-          `${ansiColors.red(figures.cross)} Error during initialization2:`,
-          err.message
-        );
+    if (parsedData.isFrontendInitialized === false) {
+      const frontendOption = await frontendSubMenuPrompt();
+      switch (frontendOption) {
+        case "yes":
+          try {
+            await addFrontendUsingFlutterModule(projectDirPath);
+            //write in servitect db file
+            parsedData.isFrontendInitialized = true;
+            parsedData.isFlutter = true;
+            await fs.writeFile(
+              servitectDB,
+              JSON.stringify(parsedData, null, 2)
+            );
+
+            // Intitial Flutter Setup
+            // await initialFlutterSetUp(projectDirPath + "/flutterfrontend");
+          } catch (err) {
+            console.error(
+              `${ansiColors.red(figures.cross)} Error during initialization2:`,
+              err.message
+            );
+          }
+          break;
+        case "no": //when control here. The program ends. Check return statements properly @Atharva884
+          parsedData.isFrontendInitialized = "notNeeded";
+          await fs.writeFile(servitectDB, JSON.stringify(parsedData, null, 2));
+          console.log(
+            chalk.greenBright(
+              `${chalk.greenBright(figures.tick)} Frontend is not initialized!`
+            )
+          );
+          menu();
+          break;
+        case "back":
+          return "12";
       }
-      break;
-    case "no": //when control here. The program ends. Check return statements properly @Atharva884
-      parsedData.isFrontendInitialized = "notNeeded";
-      await fs.writeFile(servitectDB, JSON.stringify(parsedData, null, 2));
-      console.log("Frontend is not initialized");
-      // return "2";
-      break;
-    case "back":
-      return "12";
-  }
-  return "2";
-}
+      return "2";
+    }
 
     const answer = await select({
       theme: {
@@ -81,7 +91,7 @@ if(parsedData.isFrontendInitialized === false){
         //     "Use this to initialize a new MVC project"
         //   ),
         // },
-//change the numbering if the planned thing works
+        //change the numbering if the planned thing works
 
         // {
         //   name: "Do you also want to add Frontend using Flutter. (Press enter to select)",
@@ -167,7 +177,7 @@ if(parsedData.isFrontendInitialized === false){
         },
       ],
     });
-  
+
     return answer;
   } catch (error) {
     if (error instanceof Error && error.name === "ExitPromptError") {
@@ -236,7 +246,7 @@ async function frontendSubMenuPrompt() {
         value: "no",
         description: ansiColors.gray("Use next for text generation"),
       },
-   
+
       new Separator(),
       {
         name: ansiColors.red.bold("Go Back"),
@@ -247,6 +257,7 @@ async function frontendSubMenuPrompt() {
   });
   return frontendOption;
 }
+
 // Handle Ctrl+C signal
 process.on("SIGINT", () => {
   console.log(ansiColors.red.bold("\n\nExiting... Goodbye!"));
@@ -255,8 +266,6 @@ process.on("SIGINT", () => {
 
 export default promptUser;
 export { llmSubMenuPrompt, frontendSubMenuPrompt };
-
-
 
 //servitec mvc-create --> projectfolder -->if(locafile isInitalized: false) then run initailizer, else show other options
 

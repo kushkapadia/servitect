@@ -1,4 +1,8 @@
-import { frontendUsingReactDependencies, llmUsingOllamaDependencies, frontendUsingFlutterDependencies } from "../dependencies.js";
+import {
+  frontendUsingReactDependencies,
+  llmUsingOllamaDependencies,
+  frontendUsingFlutterDependencies,
+} from "../dependencies.js";
 import {
   createWithAnimation,
   installWithAnimation,
@@ -55,43 +59,12 @@ import path from "path";
 //   }
 // }
 
-
 async function addFrontendUsingFlutterModule(frontendDirPath) {
   try {
-    await createWithAnimation(frontendUsingFlutterDependencies, frontendDirPath);
-
-    // await fs.writeFile(
-    //   path.join(`${projectDirPath}/routes`, `llmRoutes.js`),
-    //   mvcFileContent.llmUsingOllamaRouterContent
-    // );
-
-    // // Read the file content
-    // let data = await fs.readFile(`${projectDirPath}/routes/router.js`, "utf8");
-
-    // const importContent = `const llmUsingOllamaRoutes = require("./llmRoutes");`;
-
-    // const routeContent = `router.use("/llm", llmUsingOllamaRoutes);`;
-
-    // const importMarker = "//imports here";
-
-    // const routeMarker = "//code here";
-
-    // await fs.appendFile(
-    //   `${projectDirPath}/helper/LlmHelperOllama.js`,
-    //   mvcFileContent.llmUsingOllamaHelperFileContent
-    // );
-
-    // await codeInserter(
-    //   importMarker,
-    //   routeMarker,
-    //   `${projectDirPath}/routes/router.js`,
-    //   importContent,
-    //   routeContent,
-    //   data
-    // );
-
-    // await showProgressMessages(llmUsingOllamaMessages);
-
+    await createWithAnimation(
+      frontendUsingFlutterDependencies,
+      frontendDirPath
+    );
     menu();
   } catch (err) {
     console.error(`${ansiColors.red(figures.cross)} Error: ${err.message}`);
