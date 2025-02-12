@@ -1,6 +1,6 @@
 // Initialization Messages
 const progressMessages = [
-  "constants folder created successfully",
+  "constants folder created successfully.",
   "helper folder created successfully.",
   "models folder created successfully.",
   "controllers folder created successfully.",
