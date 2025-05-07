@@ -104,7 +104,7 @@ sudo npm install -g servitect
 After installation, you can create a new MVC project by running:
 
 ```bash
-mvc-create
+servitect mvc-create
 ```
 
 Follow the `Menu` to configure your project.
