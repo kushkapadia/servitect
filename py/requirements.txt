@@ -1,0 +1,10 @@
+Package           Version
+----------------- -------
+click             8.2.1
+markdown-it-py    3.0.0
+mdurl             0.1.2
+pygments          2.19.2
+rich              14.0.0
+shellingham       1.5.4
+typer             0.16.0
+typing-extensions 4.14.1
