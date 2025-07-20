@@ -355,7 +355,7 @@ If you are just starting your journey in server development or find certain conc
 - **In-Depth Documentation**: Detailed documentation covering features, commands, and best practices
 - **Community Support**: Connect with us on LinkedIn for support and questions:
    - [Kush Kapadia](https://www.linkedin.com/in/kushkapadia/)
-   - [Mit Shah](https://www.linkedin.com/in/mitshah2406/)
+   - [Mit Shah](https://mitshah.dev)
    - [Atharva Jadhav](https://www.linkedin.com/in/atharvajadhav88/)
 
 ## 🤝 **Contributing**
