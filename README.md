@@ -31,7 +31,8 @@ Servitect streamlines the backend creation process, allowing developers to focus
 `Servitect` comes with a variety of built-in features that streamline the development process:
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/6c13bfa0-892d-4ef8-bdb2-d6363e89a7e7" alt="Servitect Features" width="400" height="250">
+<img width="1264" height="1492" alt="image" src="https://github.com/user-attachments/assets/f837353c-2604-41ec-a226-cecd935ceac3" />
+
 </div>
 
 ### 1. 📁 MVC Folder Structure Generation
